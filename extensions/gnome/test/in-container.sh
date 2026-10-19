@@ -9,9 +9,13 @@ export HOME="${HOME:-/tmp/home}"
 mkdir -p "$HOME"
 export XDG_RUNTIME_DIR=/tmp/runtime-user
 mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
-mkdir -p "$HOME/.local/share/gnome-shell/extensions"
-cp -r /extension "$HOME/.local/share/gnome-shell/extensions/$UUID"
-rm -rf "$HOME/.local/share/gnome-shell/extensions/$UUID/test"
+# Without a vividctl binary the extension is copied by hand. With one, `vividctl extension install`
+# puts it in place before the shell starts, which is what a login looks like to it.
+if [ ! -x /vividctl ]; then
+    mkdir -p "$HOME/.local/share/gnome-shell/extensions"
+    cp -r /extension "$HOME/.local/share/gnome-shell/extensions/$UUID"
+    rm -rf "$HOME/.local/share/gnome-shell/extensions/$UUID/test"
+fi
 
 inside() {
     set -uo pipefail
@@ -33,7 +37,18 @@ inside() {
 
     echo "gnome-shell: $(gnome-shell --version)"
     gsettings set org.gnome.shell disable-user-extensions false
-    gsettings set org.gnome.shell enabled-extensions "['$UUID']"
+    if [ -x /vividctl ]; then
+        # Another extension is already enabled: installing ours must keep it.
+        gsettings set org.gnome.shell enabled-extensions "['other@example.org']"
+        install_out="$(/vividctl extension install 2>&1)"; install_rc=$?
+        [ "$install_rc" -eq 0 ] && grep -q "installed the extension" <<<"$install_out" && ok "vividctl extension install puts the extension in place" || fail "extension install: rc=$install_rc $install_out"
+        grep -q "log out and back in once" <<<"$install_out" && ok "the first install says to log in again" || fail "no log-in hint: $install_out"
+        enabled_now="$(gsettings get org.gnome.shell enabled-extensions)"
+        { grep -q "other@example.org" <<<"$enabled_now" && grep -q "$UUID" <<<"$enabled_now"; } && ok "it enabled the extension and kept the other one" || fail "enabled-extensions is: $enabled_now"
+        [ "$(/vividctl extension status >/dev/null 2>&1; echo $?)" = "1" ] && ok "status exits 1 while the extension is not running yet" || fail "status should fail before the shell loads it"
+    else
+        gsettings set org.gnome.shell enabled-extensions "['$UUID']"
+    fi
     # A flat, coloured background so a saturation change is measurable.
     gsettings set org.gnome.desktop.background picture-options none
     gsettings set org.gnome.desktop.background primary-color '#4a78b5'
@@ -52,6 +67,13 @@ inside() {
         gdbus introspect --session --dest org.vividctl.Shell --object-path /org/vividctl/Shell >/dev/null 2>&1 && break
         sleep 1
     done
+
+    if [ -x /vividctl ]; then
+        # The shell started after the install, so it loaded the extension without any enable call.
+        status_out="$(/vividctl extension status 2>&1)"; status_rc=$?
+        { [ "$status_rc" -eq 0 ] && grep -q "running: yes" <<<"$status_out"; } && ok "after a fresh start, status says installed, enabled and running" || fail "status: rc=$status_rc $status_out"
+        /vividctl extension install 2>&1 | grep -q "nothing more to do" && ok "installing again on a running extension changes nothing" || fail "second install was not a no-op"
+    fi
 
     # --- interface
     prop Version | grep -q "uint32 1" && ok "the extension loads and answers on D-Bus (interface version 1)" || fail "no answer, or the wrong interface version"
@@ -165,6 +187,13 @@ PY
         [ "$(getsat "$right")" = "1" ] && ok "enabling again starts neutral (no state leaks across a disable)" || fail "state leaked across disable"
     else
         echo "SKIP  gnome-extensions is not installed in this image"
+    fi
+
+    if [ -x /vividctl ]; then
+        remove_out="$(/vividctl extension remove 2>&1)"
+        grep -q "deleted the extension" <<<"$remove_out" && [ ! -e "$HOME/.local/share/gnome-shell/extensions/$UUID" ] && ok "vividctl extension remove deletes the files" || fail "remove: $remove_out"
+        after="$(gsettings get org.gnome.shell enabled-extensions)"
+        { grep -q "other@example.org" <<<"$after" && ! grep -q "$UUID" <<<"$after"; } && ok "remove disabled it and kept the other extension" || fail "enabled-extensions after remove: $after"
     fi
 
     echo "--- shell log: JS errors"
