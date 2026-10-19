@@ -22,6 +22,7 @@ vivid-engine = { path = "crates/vivid-engine" }
 
 # External crates
 # Every entry needs a row in docs/dependencies.md (reason, why not std, compile cost, transitive count).
+rustix = { version = "1", default-features = false, features = ["std", "fs"] }
 
 [workspace.lints.rust]
 # Safe crates also carry #![forbid(unsafe_code)]; only vivid-nvkms may use unsafe.
