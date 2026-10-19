@@ -1,6 +1,6 @@
 # SP-04: GNOME Shell saturation shader
 
-Issue: #5. Status: done, decision is go with conditions. The ADR is `docs/adr/0002-gnome-shader-backend.md`.
+Issue: #5. Status: done, decision is go with conditions. Runtime-tested on Shell 46 (real session), and headless in containers on 46, 48, 49 and 50. The ADR is `docs/adr/0002-gnome-shader-backend.md`.
 
 ## Question
 
@@ -11,7 +11,8 @@ Can a GNOME Shell extension apply a saturation shader to everything on screen, a
 - Ubuntu 24.04.4 LTS, GNOME Shell 46.0, mutter 46.2, Wayland session ("Ubuntu on Wayland")
 - NVIDIA open driver 595.99.02, GeForce GTX 1660 Ti, one monitor (Philips PHL 242V8, 1920x1080, HDMI, 75 Hz, no VRR)
 - Test game: Left 4 Dead 2 (native Linux, `hl2_linux`, runs through Xwayland), fullscreen
-- Not available: a second monitor, a hybrid laptop, Shell 47 to 50
+- Not available: a second monitor, a hybrid laptop, Shell 47 (no Ubuntu release ships it)
+- Shell 48, 49 and 50 were run headless in Docker containers (see below)
 
 Ubuntu 24.04 starts Xorg by default on NVIDIA >= 470 (`61-gdm.rules`), even with `nvidia_drm modeset=1`. A Wayland session has to be picked at the login screen. This matters for documentation.
 
@@ -77,9 +78,31 @@ Two public APIs the extension depends on change in GNOME 48:
 | `ClutterShaderEffect:shader-type` enum | `Clutter.ShaderType` (`FRAGMENT_SHADER`) | `Cogl.ShaderType` (`FRAGMENT`) |
 | Unredirect control | `Meta.disable_unredirect_for_display(display)` | `Meta.Compositor.disable_unredirect()` |
 
-`clutter_shader_effect_set_shader_source` and `clutter_shader_effect_set_uniform_value` are unchanged in 50.1. `impl.js` has a compatibility layer (version switch for the enum, feature detection for unredirect). It was not run on 48 or later.
+`clutter_shader_effect_set_shader_source` and `clutter_shader_effect_set_uniform_value` are unchanged in 50.1. `impl.js` has a compatibility layer (version switch for the enum, feature detection for unredirect). It was run on 48, 49 and 50 headless (next section).
 
-Verified against tags 46.2, 47.5, 48.4, 49.2 and 50.1 of mutter. Shell 50 was not run: the dev machine is Ubuntu 24.04.
+Checked against tags 46.2, 47.5, 48.4, 49.2 and 50.1 of mutter.
+
+## Headless test on Shell 46, 48, 49 and 50
+
+`docker/` builds an Ubuntu image per release (24.04 = Shell 46, 25.04 = 48, 25.10 = 49, 26.04 = 50) and runs `in-container.sh`: a headless GNOME Shell (`--headless --unsafe-mode --virtual-monitor 1280x720`, software rendering) with the extension enabled. `./run.sh [ubuntu-tag]` runs one release. The script checks that the extension loads and answers on D-Bus, that unredirect is disabled when boosted and restored at neutral, that `Reload` works, that a screenshot shows the boost (mean HSV saturation), and that a half-screen region only changes the left half.
+
+| Shell | Loads, D-Bus | Unredirect on/off | Reload | Screenshot shows boost | Half-screen region |
+|---|---|---|---|---|---|
+| 46.0 | pass | pass | pass | pass (1.47x) | known failure, see below |
+| 48.0 | pass | pass | pass | pass (1.52x) | pass |
+| 49.0 | pass | pass | pass | pass (1.52x) | pass |
+| 50.1 | pass | pass | pass | pass (1.54x) | pass |
+
+Negative control: on Shell 50 with the compatibility layer removed (`Clutter.ShaderType` only), the extension fails to load with `ShaderType is undefined`. So the harness detects the GNOME 48 break, and the layer fixes it.
+
+Limits of this test:
+
+- Software rendering on a virtual monitor. It says nothing about GPU cost, real games, VRR or latency.
+- The boost ratio is below 2 because the test background is one flat colour and the shader clamps; the check only needs it to be clearly above neutral.
+- **Shell 46 headless, region test.** The first region applied after neutral showed the whole screen boosted, while the same region at a second fraction (0.25) worked and `Describe` reported the right rectangle (640 px wide). The identical test passed by eye on the real 46 session. The cause was not found. The harness marks it `XFAIL` on Shell < 48. It should be understood before the CI gate for 46 is made strict (#25).
+- A headless shell repaints late: on 46 a screenshot taken right after a change still showed the old frame. The script takes a throwaway capture first, then waits 3 s.
+- Shell 50 needs a system bus at startup (logind). The script starts a private `dbus-daemon` as a stand-in.
+- `docker/out/` holds the screenshots of the last run and is git-ignored.
 
 ## Lessons for the real extension
 
@@ -93,7 +116,9 @@ Verified against tags 46.2, 47.5, 48.4, 49.2 and 50.1 of mutter. Shell 50 was no
 
 ## Not done
 
-- Shell 47 to 50 runtime tests (tracked with the CI work in #25).
+- Shell 47 (no Ubuntu release ships it) and the real, non-headless behaviour on 48 to 50 (GPU, game, VRR).
+- The Shell 46 headless region quirk above.
+- Turning `docker/` into a CI job (#25).
 - Two real monitors, fractional scaling, mixed refresh rates.
 - A hybrid laptop (#8), where the game renders on the dGPU and is copied to the iGPU.
 - Excluding screenshots and recordings from the effect.

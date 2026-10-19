@@ -16,7 +16,7 @@ Evidence, on GNOME Shell 46 / Wayland / NVIDIA 595 desktop:
 - Screenshots and screen recordings include the effect.
 - A half-screen debug region changed only that half, so the per-monitor rectangle logic works.
 - Cost on a 1080p GTX 1660 Ti with a fullscreen game: about 1 percentage point of GPU for gnome-shell, no measurable CPU change, whole-GPU and power differences within the game's own variation.
-- Two APIs the extension uses change in GNOME 48 (shader type enum, unredirect control). Both are handled by a compatibility layer that was written from the mutter sources and has not been run on 48 or later.
+- Two APIs the extension uses change in GNOME 48 (shader type enum, unredirect control). A compatibility layer handles both. It was run headless in containers on Shell 48.0, 49.0 and 50.1 (load, D-Bus, unredirect on and off, reload, screenshot boost, half-screen region), and a negative control without the layer fails on 50 as expected. Shell 46 passes headless except for a region quirk that does not reproduce on a real 46 session.
 
 ## Decision
 
@@ -26,7 +26,7 @@ Go, as a secondary backend with conditions.
 2. **Shape.** A GNOME Shell extension plus a D-Bus interface. The Rust side (`vivid-gnome`) is a D-Bus client. No code runs in the shell beyond the extension.
 3. **Minimal extension, version-checked.** The extension stays as small as the PoC: effect, per-monitor rectangles, unredirect control, D-Bus. Anything that can live in Rust does.
 4. **Compatibility layer from day one.** Version switch for the shader type enum (GNOME 48), feature detection for the unredirect API. Each supported Shell version is listed explicitly in `metadata.json`.
-5. **CI on real shells.** The extension is loaded and exercised on every supported Shell version (24.04 GNOME 46 and 26.04 GNOME 50) in CI (#25). A new Shell version is not supported until that passes.
+5. **CI on real shells.** The extension is loaded and exercised on every supported Shell version (24.04 GNOME 46 and 26.04 GNOME 50) in CI (#25). A new Shell version is not supported until that passes. The spike's `docker/` harness is the starting point: it already runs on 46, 48, 49 and 50 in software rendering.
 6. **Distribution.** Shipped in the `.deb` (system extension directory) and optionally on extensions.gnome.org. Not enabled behind the user's back: `vividctl doctor` says when it is needed and how to enable it.
 7. **Unredirect only when needed.** Fullscreen unredirect is disabled only while some monitor is not neutral, and restored at neutral.
 
@@ -43,7 +43,7 @@ Per-monitor identity is not decided here. Mutter and NVKMS name the same connect
 
 ## Not covered by this spike
 
-Shell 47 to 50 runtime, two or more real monitors, fractional scaling and mixed refresh rates, an actual hybrid laptop (#8), latency, VRR, and excluding captures from the effect. These stay open and are tracked by #25, #6 and #8.
+Shell 47 (no Ubuntu release ships it), the behaviour of 48 to 50 on real GPUs and with real games, the Shell 46 headless region quirk, two or more real monitors, fractional scaling and mixed refresh rates, an actual hybrid laptop (#8), latency, VRR, and excluding captures from the effect. These stay open and are tracked by #25, #6 and #8. The headless containers use software rendering, so they validate the API and the logic, not cost.
 
 ## Alternatives considered
 
