@@ -27,6 +27,8 @@ pub enum GnomeError {
     Rejected(String),
     /// A reply did not have the shape the interface promises.
     BadReply(String),
+    /// Installing or removing the extension failed (files, or the `gsettings` command).
+    Io(String),
 }
 
 impl fmt::Display for GnomeError {
@@ -36,7 +38,7 @@ impl fmt::Display for GnomeError {
             Self::NoMutter(reason) => write!(f, "Mutter does not answer (not a GNOME session?): {reason}"),
             Self::NoExtension(reason) => write!(
                 f,
-                "the vividctl GNOME Shell extension is not running ({reason}); install it with extensions/gnome/install.sh and log in again"
+                "the vividctl GNOME Shell extension is not running ({reason}); run `vividctl extension install` and log in again"
             ),
             Self::VersionMismatch { found, supported } => write!(
                 f,
@@ -44,6 +46,7 @@ impl fmt::Display for GnomeError {
             ),
             Self::Rejected(reason) => write!(f, "the extension refused the request: {reason}"),
             Self::BadReply(reason) => write!(f, "unexpected reply: {reason}"),
+            Self::Io(reason) => f.write_str(reason),
         }
     }
 }
@@ -58,7 +61,7 @@ impl From<GnomeError> for BackendError {
                 Self::Unavailable(reason)
             }
             GnomeError::Rejected(_) => Self::Rejected(reason),
-            GnomeError::Bus(_) | GnomeError::BadReply(_) => Self::Io(reason),
+            GnomeError::Bus(_) | GnomeError::BadReply(_) | GnomeError::Io(_) => Self::Io(reason),
         }
     }
 }
@@ -70,7 +73,7 @@ mod tests {
     #[test]
     fn a_missing_extension_tells_the_user_what_to_do() {
         let message: String = GnomeError::NoExtension("name not owned".into()).to_string();
-        assert!(message.contains("install.sh") && message.contains("log in again"));
+        assert!(message.contains("vividctl extension install") && message.contains("log in again"));
     }
 
     #[test]
@@ -91,5 +94,6 @@ mod tests {
         assert!(matches!(kind(GnomeError::Rejected("x".into())), BackendError::Rejected(_)));
         assert!(matches!(kind(GnomeError::Bus("x".into())), BackendError::Io(_)));
         assert!(matches!(kind(GnomeError::BadReply("x".into())), BackendError::Io(_)));
+        assert!(matches!(kind(GnomeError::Io("x".into())), BackendError::Io(_)));
     }
 }

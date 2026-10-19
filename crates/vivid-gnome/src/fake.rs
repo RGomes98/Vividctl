@@ -3,7 +3,7 @@
 
 use std::collections::BTreeMap;
 
-use crate::{ExtensionInfo, GnomeError, INTERFACE_VERSION, MutterMonitor, Transport};
+use crate::{ExtensionInfo, GnomeError, INTERFACE_VERSION, MutterMonitor, Transport, extension::Settings};
 
 /// The saturation range the extension accepts.
 const ACCEPTED: std::ops::RangeInclusive<f64> = 0.0..=4.0;
@@ -74,5 +74,50 @@ impl Transport for FakeShell {
     fn saturation(&mut self, connector: &str) -> Result<f64, GnomeError> {
         self.known(connector)?;
         Ok(self.saturations.get(connector).copied().unwrap_or(1.0))
+    }
+}
+
+/// In-memory GNOME settings.
+#[derive(Clone, Debug)]
+pub struct FakeSettings {
+    /// The `enabled-extensions` list.
+    pub enabled:      Vec<String>,
+    /// The negation of `disable-user-extensions`.
+    pub user_allowed: bool,
+    /// Makes every call fail, to exercise failure paths.
+    pub broken:       bool,
+}
+
+impl Default for FakeSettings {
+    fn default() -> Self {
+        Self {
+            enabled:      Vec::new(),
+            user_allowed: true,
+            broken:       false,
+        }
+    }
+}
+
+impl Settings for FakeSettings {
+    fn enabled_extensions(&mut self) -> Result<Vec<String>, GnomeError> {
+        if self.broken {
+            return Err(GnomeError::Io("gsettings is not available".into()));
+        }
+        Ok(self.enabled.clone())
+    }
+
+    fn set_enabled_extensions(&mut self, uuids: &[String]) -> Result<(), GnomeError> {
+        if self.broken {
+            return Err(GnomeError::Io("gsettings is not available".into()));
+        }
+        self.enabled = uuids.to_vec();
+        Ok(())
+    }
+
+    fn user_extensions_allowed(&mut self) -> Result<bool, GnomeError> {
+        if self.broken {
+            return Err(GnomeError::Io("gsettings is not available".into()));
+        }
+        Ok(self.user_allowed)
     }
 }
