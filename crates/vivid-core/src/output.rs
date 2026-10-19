@@ -196,7 +196,7 @@ mod tests {
 
     #[test]
     fn no_outputs_gives_no_ids() {
-        assert!(assign_ids(std::iter::empty()).is_empty());
+        assert_eq!(assign_ids(std::iter::empty()), Vec::<OutputId>::new());
     }
 
     #[test]
