@@ -26,7 +26,7 @@ Gate: SP-01 and SP-04 decide whether the NVKMS + GNOME strategy holds. If SP-04 
 **Goal:** `vividctl set/get/reset/list/apply/doctor` working on NVIDIA desktops and laptop external ports, persistent at login.
 
 - [x] **vivid-core:** domain types, validated `Vibrance`, `Backend` trait, errors — P0 · M (#12)
-- [ ] **vivid-nvkms transport:** ioctl wrapper and deterministic fake — P0 · M (#13)
+- [x] **vivid-nvkms transport:** ioctl wrapper and deterministic fake — P0 · M (#13)
 - [ ] **vivid-nvkms ABI generations:** per-range layouts, `paramSize` probe, reply validation — P0 · L (#14)
 - [ ] **vivid-outputs:** sysfs discovery, owning driver, EDID identity — P0 · M (#15)
 - [ ] **vivid-config:** TOML model, XDG paths, atomic writes, versioned migration — P1 · M (#16)
