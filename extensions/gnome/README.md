@@ -12,7 +12,7 @@ Supported: GNOME Shell 46 to 50 (tested in CI on 46 and 50, and locally on 48 an
 extensions/gnome/install.sh
 ```
 
-On Wayland, log out and back in once so the shell discovers the extension, then `gnome-extensions enable vividctl@rgomes98.github.io` if the script did not already.
+On Wayland, log out and back in once so the shell discovers the extension, then run `gnome-extensions enable vividctl@rgomes98.github.io`. The script enables it right away only when the running shell already knows it, and says so when it does not.
 
 ## How it works
 
