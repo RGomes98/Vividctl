@@ -8,7 +8,7 @@ edition = "2024"
 rust-version = "1.88"
 license = "Apache-2.0"
 authors = ["Renan Gomes Tavares"]
-repository = "https://github.com/RGomes98/vividctl"
+repository = "https://github.com/RGomes98/Vividctl"
 
 [workspace.dependencies]
 # Internal crates
