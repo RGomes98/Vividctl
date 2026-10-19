@@ -4,6 +4,8 @@
 
 mod cli;
 mod commands;
+#[cfg(feature = "gnome")]
+mod extension;
 mod render;
 
 use std::{io, process::ExitCode};

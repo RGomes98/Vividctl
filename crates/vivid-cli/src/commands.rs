@@ -18,6 +18,11 @@ pub fn run(command: &Command, engine: &mut Engine, out: &mut dyn Write, err: &mu
 }
 
 fn execute(command: &Command, engine: &mut Engine, out: &mut dyn Write, err: &mut dyn Write) -> io::Result<u8> {
+    // Managing the extension does not need the outputs, and a warning about a backend would be noise.
+    #[cfg(feature = "gnome")]
+    if let Command::Extension { action } = command {
+        return crate::extension::run(action, engine, out, err);
+    }
     let listing: Listing = engine.listing();
     for problem in &listing.problems {
         writeln!(err, "vividctl: warning: {}: {}", problem.backend, problem.error)?;
@@ -33,6 +38,8 @@ fn execute(command: &Command, engine: &mut Engine, out: &mut dyn Write, err: &mu
             }
         },
         Command::Reset { output } => set(engine, &listing, output.as_deref(), Vibrance::NEUTRAL, out, err),
+        #[cfg(feature = "gnome")]
+        Command::Extension { .. } => Ok(0),
     }
 }
 

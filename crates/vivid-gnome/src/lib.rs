@@ -7,6 +7,8 @@
 //!
 //! - [`Transport`], the four calls the backend needs, with [`SessionBus`] as the real thing
 //! - [`MutterMonitor`] and [`ExtensionInfo`], what comes back
+//! - [`extension`], the extension's files (embedded in the binary) and the `gsettings` switch that
+//!   enables it, so `vividctl` can install the extension that matches it
 //! - [`fake::FakeShell`], an in-memory stand-in for tests
 //! - [`GnomeError`], which converts into [`vivid_core::BackendError`]
 
@@ -14,6 +16,7 @@
 
 mod bus;
 mod error;
+pub mod extension;
 pub mod fake;
 mod transport;
 
