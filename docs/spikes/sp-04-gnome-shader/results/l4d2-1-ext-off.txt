@@ -1,0 +1,9 @@
+label: l4d2-1-ext-off   seconds: 30   date: 2026-10-19T16:03:15-03:00
+gpu util avg: 38.3 %   power avg: 32.2 W   graphics clock avg: 629 MHz   (31 samples)
+pmon sm avg  hl2_linux          31.6 %
+pmon sm avg  Xwayland            6.2 %
+pmon sm avg  steamwebhelper      0.0 %
+pmon sm avg  steam               0.0 %
+pmon sm avg  renderD128          0.0 %
+pmon sm avg  gnome-shell         0.0 %
+gnome-shell CPU avg: 6.6 %   (30 samples)

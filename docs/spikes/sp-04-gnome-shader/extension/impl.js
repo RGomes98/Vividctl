@@ -2,10 +2,31 @@
 // string so it can be re-imported (see Reload in extension.js) without logging out.
 
 import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
 import GObject from 'gi://GObject';
 import Meta from 'gi://Meta';
 
+import * as Config from 'resource:///org/gnome/shell/misc/config.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
+// Two mutter API breaks land in GNOME 48 (checked in the mutter sources, not yet run on 48+):
+//  - ClutterShaderEffect:shader-type takes Cogl.ShaderType instead of Clutter.ShaderType
+//  - Meta.disable_unredirect_for_display() became Meta.Compositor.disable_unredirect()
+const SHELL_MAJOR = parseInt(Config.PACKAGE_VERSION.split('.')[0], 10);
+const FRAGMENT_SHADER = SHELL_MAJOR >= 48 ? Cogl.ShaderType.FRAGMENT : Clutter.ShaderType.FRAGMENT_SHADER;
+
+function setUnredirect(disable) {
+    if (typeof Meta.disable_unredirect_for_display === 'function') {
+        if (disable)
+            Meta.disable_unredirect_for_display(global.display);
+        else
+            Meta.enable_unredirect_for_display(global.display);
+    } else if (disable) {
+        global.compositor.disable_unredirect();
+    } else {
+        global.compositor.enable_unredirect();
+    }
+}
 
 const MAX_MONITORS = 4;
 
@@ -41,7 +62,7 @@ const LOAD_ID = Math.floor(Math.random() * 1e9);
 const SaturationEffect = GObject.registerClass({GTypeName: `VividSaturationEffect_${LOAD_ID}`},
 class SaturationEffect extends Clutter.ShaderEffect {
     _init(count) {
-        super._init({shader_type: Clutter.ShaderType.FRAGMENT_SHADER});
+        super._init({shader_type: FRAGMENT_SHADER});
         this._count = count;
         this.set_shader_source(buildShader(count));
     }
@@ -68,6 +89,7 @@ export class Impl {
         this._saturations = [];
         this._effect = null;
         this._unredirectDisabled = false;
+        this._debugFraction = 0;
         this._monitorsChangedId = Main.layoutManager.connect('monitors-changed', () => this._rebuild());
         this._rebuild();
     }
@@ -87,7 +109,11 @@ export class Impl {
         this._rebuild();
     }
     _monitors() {
-        return Main.layoutManager.monitors.slice(0, MAX_MONITORS);
+        const monitors = Main.layoutManager.monitors.slice(0, MAX_MONITORS);
+        if (!this._debugFraction)
+            return monitors;
+        // Debug: pretend monitor 0 only covers the left fraction of its width.
+        return monitors.map((m, i) => (i === 0 ? {...m, x: m.x, y: m.y, width: Math.round(m.width * this._debugFraction), height: m.height} : m));
     }
 
     _rebuild() {
@@ -118,16 +144,18 @@ export class Impl {
     _setUnredirect(disable) {
         if (disable === this._unredirectDisabled)
             return;
-        if (disable)
-            Meta.disable_unredirect_for_display(global.display);
-        else
-            Meta.enable_unredirect_for_display(global.display);
+        setUnredirect(disable);
         this._unredirectDisabled = disable;
     }
 
     SetSaturation(monitor, saturation) {
         if (monitor === 100) {
             this._control(saturation);
+            return;
+        }
+        if (monitor === 101) {
+            this._debugFraction = saturation > 0 ? Math.min(1, saturation) : 0;
+            this._apply();
             return;
         }
         if (monitor >= this._saturations.length)
