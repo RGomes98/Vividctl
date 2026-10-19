@@ -46,6 +46,15 @@ int main(void) {
     CONST(NVKMS_EDID_BUFFER_SIZE);
     CONST(NVKMS_ALLOC_DEVICE_STATUS_SUCCESS);
     CONST(NVKMS_ALLOC_DEVICE_STATUS_VERSION_MISMATCH);
+    CONST(NVKMS_ALLOC_DEVICE_STATUS_NO_HARDWARE_AVAILABLE);
+
+    CONST(NVKMS_CONNECTOR_TYPE_DP);
+    CONST(NVKMS_CONNECTOR_TYPE_VGA);
+    CONST(NVKMS_CONNECTOR_TYPE_DVI_I);
+    CONST(NVKMS_CONNECTOR_TYPE_DVI_D);
+    CONST(NVKMS_CONNECTOR_TYPE_ADC);
+    CONST(NVKMS_CONNECTOR_TYPE_LVDS);
+    CONST(NVKMS_CONNECTOR_TYPE_HDMI);
 
     /* AllocDevice */
     SIZE(struct NvKmsAllocDeviceParams);
@@ -62,10 +71,13 @@ int main(void) {
 
     /* FreeDevice */
     SIZE(struct NvKmsFreeDeviceParams);
+    OFFSET(struct NvKmsFreeDeviceRequest, deviceHandle);
 
     /* QueryDisp */
     SIZE(struct NvKmsQueryDispParams);
     OFFSET(struct NvKmsQueryDispParams, reply);
+    OFFSET(struct NvKmsQueryDispRequest, deviceHandle);
+    OFFSET(struct NvKmsQueryDispRequest, dispHandle);
     OFFSET(DISP_REP, numConnectors);
     OFFSET(DISP_REP, connectorHandles);
     OFFSET(DISP_REP, gpuString);
@@ -73,6 +85,9 @@ int main(void) {
     /* QueryConnectorStaticData */
     SIZE(struct NvKmsQueryConnectorStaticDataParams);
     OFFSET(struct NvKmsQueryConnectorStaticDataParams, reply);
+    OFFSET(struct NvKmsQueryConnectorStaticDataRequest, deviceHandle);
+    OFFSET(struct NvKmsQueryConnectorStaticDataRequest, dispHandle);
+    OFFSET(struct NvKmsQueryConnectorStaticDataRequest, connectorHandle);
     OFFSET(CONN_REP, dpyId);
     OFFSET(CONN_REP, type);
     OFFSET(CONN_REP, typeIndex);
@@ -81,6 +96,8 @@ int main(void) {
     SIZE(struct NvKmsQueryDpyDynamicDataParams);
     SIZE(DYN_REQ);
     OFFSET(struct NvKmsQueryDpyDynamicDataParams, reply);
+    OFFSET(DYN_REQ, deviceHandle);
+    OFFSET(DYN_REQ, dispHandle);
     OFFSET(DYN_REQ, dpyId);
     OFFSET(DYN_REP, name);
     OFFSET(DYN_REP, connected);
@@ -90,10 +107,16 @@ int main(void) {
 
     /* SetDpyAttribute / GetDpyAttribute */
     SIZE(struct NvKmsSetDpyAttributeParams);
+    OFFSET(struct NvKmsSetDpyAttributeRequest, deviceHandle);
+    OFFSET(struct NvKmsSetDpyAttributeRequest, dispHandle);
     OFFSET(struct NvKmsSetDpyAttributeRequest, dpyId);
     OFFSET(struct NvKmsSetDpyAttributeRequest, attribute);
     OFFSET(struct NvKmsSetDpyAttributeRequest, value);
     SIZE(struct NvKmsGetDpyAttributeParams);
+    OFFSET(struct NvKmsGetDpyAttributeRequest, deviceHandle);
+    OFFSET(struct NvKmsGetDpyAttributeRequest, dispHandle);
+    OFFSET(struct NvKmsGetDpyAttributeRequest, dpyId);
+    OFFSET(struct NvKmsGetDpyAttributeRequest, attribute);
     OFFSET(struct NvKmsGetDpyAttributeParams, reply);
     OFFSET(struct NvKmsGetDpyAttributeReply, value);
     return 0;

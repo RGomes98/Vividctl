@@ -27,7 +27,7 @@ Gate: SP-01 and SP-04 decide whether the NVKMS + GNOME strategy holds. If SP-04 
 
 - [x] **vivid-core:** domain types, validated `Vibrance`, `Backend` trait, errors — P0 · M (#12)
 - [x] **vivid-nvkms transport:** ioctl wrapper and deterministic fake — P0 · M (#13)
-- [ ] **vivid-nvkms ABI generations:** per-range layouts, `paramSize` probe, reply validation — P0 · L (#14)
+- [x] **vivid-nvkms ABI generations:** per-range layouts, `paramSize` probe, reply validation — P0 · L (#14)
 - [ ] **vivid-outputs:** sysfs discovery, owning driver, EDID identity — P0 · M (#15)
 - [ ] **vivid-config:** TOML model, XDG paths, atomic writes, versioned migration — P1 · M (#16)
 - [ ] **vivid-engine:** apply/verify/fallback, per-output backend selection — P0 · L (#17)
