@@ -24,7 +24,7 @@ Checked on every PR by `scripts/check-budgets.sh` (CI job `budgets`) on the stri
 
 | Measure | Ceiling | Today (empty stub) | Expected |
 |---|---|---|---|
-| Binary size | 1.5 MiB | 1.01 MiB (1,061,504 bytes, with the GNOME backend) | 0.8 to 1.1 MiB |
+| Binary size | 1.5 MiB | 1.09 MiB (1,146,392 bytes, with the GNOME backend and the embedded extension) | 0.8 to 1.1 MiB |
 | Unique crates in the `vivid-cli` tree, workspace crates included | 40 | 25 | about 30 |
 | Clean release build of `vividctl` (recorded, not enforced) | 30 s on the reference machine | 2.5 s | 12 to 15 s |
 

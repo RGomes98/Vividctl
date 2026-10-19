@@ -9,8 +9,8 @@
 | `vivid-config` | TOML config, XDG paths, atomic writes | |
 | `vivid-outputs` | Output discovery via sysfs/DRM (reads the EDID bytes, `vivid-core` parses them) | |
 | `vivid-nvkms` | NVIDIA NVKMS ioctl backend | Only crate with `unsafe` |
-| `vivid-gnome` | Client of the GNOME Shell extension and of Mutter's monitor list (D-Bus, `dbus` crate). Speaks saturation, not vibrance | Behind the `gnome` feature |
-| `vivid-engine` | Use cases: resolve, apply, verify, fall back, diagnose. Holds the `GnomeBackend` adapter (vibrance to saturation, via `vivid-color`) and keeps each monitor once, under the first backend that sees it | Shared by CLI and GUI |
+| `vivid-gnome` | Client of the GNOME Shell extension and of Mutter's monitor list (D-Bus, `dbus` crate). Speaks saturation, not vibrance. Carries the extension's files (embedded) and the `gsettings` switch that enables them | Behind the `gnome` feature |
+| `vivid-engine` | Use cases: resolve, apply, verify, fall back, diagnose. Holds the `GnomeBackend` adapter (vibrance to saturation, via `vivid-color`) and keeps each monitor once, under the first backend that sees it. Installs, checks and removes the Shell extension (`vividctl extension`) | Shared by CLI and GUI |
 | `vivid-cli` | `vividctl` binary | |
 | `vivid-gui` | `vivid` binary, GTK4 + libadwaita | |
 | `xtask` | abi-check, completions, man pages, packaging | |

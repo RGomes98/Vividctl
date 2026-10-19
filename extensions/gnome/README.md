@@ -9,10 +9,14 @@ Supported: GNOME Shell 46 to 50 (tested in CI on 46 and 50, and locally on 48 an
 ## Install
 
 ```
-extensions/gnome/install.sh
+vividctl extension install
 ```
 
-On Wayland, log out and back in once so the shell discovers the extension, then run `gnome-extensions enable vividctl@rgomes98.github.io`. The script enables it right away only when the running shell already knows it, and says so when it does not.
+The two files of the extension are embedded in `vividctl`, so the extension always matches the binary that installs it. The command copies them to `~/.local/share/gnome-shell/extensions/` and adds the extension to `org.gnome.shell enabled-extensions`, keeping the entries already there. Running it again changes nothing.
+
+On Wayland GNOME Shell discovers new extensions at login, so log out and back in once; the extension then starts by itself. `vividctl extension status` says whether it is installed, enabled and running (exit status 0 only when all three hold), and `vividctl extension remove` undoes the install. After an update of `vividctl`, run `install` again and log in again to load the new version.
+
+Without `vividctl` (for example when working on the extension itself), copy `extension.js` and `metadata.json` to `~/.local/share/gnome-shell/extensions/vividctl@rgomes98.github.io/` and enable it with `gnome-extensions enable`.
 
 ## How it works
 
