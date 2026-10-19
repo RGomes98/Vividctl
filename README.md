@@ -15,7 +15,7 @@ Digital Vibrance (color saturation) control for Linux on Wayland. Fast, small, a
 
 ## Usage
 
-Works today, for outputs an NVIDIA GPU drives (the internal panel of a hybrid laptop is not one of them yet):
+Works today for outputs an NVIDIA GPU drives (through the display hardware) and, on GNOME with the Shell extension installed, for every other output, including the internal panel of a hybrid laptop. Each output goes to the first backend that sees it, NVKMS before GNOME. Install the extension with `extensions/gnome/install.sh` (see [extensions/gnome/README.md](extensions/gnome/README.md)); on GNOME the value is converted to a saturation with a provisional curve until the calibration (SP-08).
 
 ```
 vividctl list [--json]                       # outputs, their state, vibrance and monitor identity
