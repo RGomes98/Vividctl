@@ -1,0 +1,9 @@
+label: l4d2-3-ext-on-sat1.5   seconds: 30   date: 2026-10-19T16:04:25-03:00
+gpu util avg: 38.8 %   power avg: 32.2 W   graphics clock avg: 672 MHz   (31 samples)
+pmon sm avg  hl2_linux          33.8 %
+pmon sm avg  Xwayland            3.2 %
+pmon sm avg  gnome-shell         1.3 %
+pmon sm avg  steamwebhelper      0.0 %
+pmon sm avg  steam               0.0 %
+pmon sm avg  renderD128          0.0 %
+gnome-shell CPU avg: 6.4 %   (30 samples)
