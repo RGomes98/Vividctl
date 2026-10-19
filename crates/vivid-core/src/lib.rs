@@ -4,21 +4,24 @@
 //!
 //! - [`Vibrance`], the validated Digital Vibrance value
 //! - [`OutputId`] and [`MonitorSpec`], the identity of a monitor (ADR-0003), and [`assign_ids`]
+//! - [`Edid`], a minimal EDID reader that produces the [`MonitorSpec`] and its [`SerialQuality`]
 //! - [`Profile`] and [`Setting`], what to apply to which monitor
 //! - [`Backend`], what NVKMS and the GNOME Shell extension implement, with [`BackendOutput`],
 //!   [`OutputHandle`] and [`Capabilities`]
-//! - the error types [`BackendError`] and [`VibranceOutOfRange`]
+//! - the error types [`BackendError`], [`EdidError`] and [`VibranceOutOfRange`]
 
 #![forbid(unsafe_code)]
 
 mod backend;
+mod edid;
 mod error;
 mod output;
 mod profile;
 mod vibrance;
 
 pub use backend::{Backend, BackendOutput, Capabilities, OutputHandle};
-pub use error::{BackendError, VibranceOutOfRange};
+pub use edid::{Edid, FACTORY_DEFAULT_SERIALS};
+pub use error::{BackendError, EdidError, VibranceOutOfRange};
 pub use output::{MonitorSpec, OutputId, SerialQuality, assign_ids};
 pub use profile::{Profile, Setting};
 pub use vibrance::Vibrance;

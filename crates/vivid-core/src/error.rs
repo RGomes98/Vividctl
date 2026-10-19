@@ -18,6 +18,30 @@ impl fmt::Display for VibranceOutOfRange {
 
 impl Error for VibranceOutOfRange {}
 
+/// Why bytes could not be read as an EDID.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum EdidError {
+    /// Fewer than the 128 bytes of the base block.
+    TooShort {
+        /// How many bytes there were.
+        len: usize,
+    },
+    /// The fixed 8-byte header is missing: these bytes are not an EDID.
+    BadHeader,
+}
+
+impl fmt::Display for EdidError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::TooShort { len } => write!(f, "EDID too short: {len} bytes, need 128"),
+            Self::BadHeader => f.write_str("not an EDID: the fixed header is missing"),
+        }
+    }
+}
+
+impl Error for EdidError {}
+
 /// Why a backend could not do what it was asked.
 ///
 /// Backends convert their own failures into one of these, so the engine and the frontends can
@@ -86,6 +110,7 @@ mod tests {
     fn errors_are_std_errors() {
         fn assert_error<E: Error>() {}
         assert_error::<VibranceOutOfRange>();
+        assert_error::<EdidError>();
         assert_error::<BackendError>();
     }
 }
