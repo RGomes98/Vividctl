@@ -15,7 +15,7 @@ Gate: SP-01 and SP-04 decide whether the NVKMS + GNOME strategy holds. If SP-04 
 - [ ] **SP-03 Persistence matrix:** suspend/resume, VT switch, hotplug, mode change, compositor restart, fullscreen/VRR, HDR — P1 · M (#4)
 - [x] **SP-04 GNOME Shell shader PoC:** shell 46 and 50, fullscreen games/unredirect, per-monitor, cost. Go with conditions, ADR-0002 — P0 · L (#5)
 - [x] **SP-05 Stable output identity:** NVKMS dpy to DRM connector to EDID to Mutter monitor. ADR-0003 — P1 · M (#6)
-- [ ] **SP-06 Build cost budgets:** GTK4/libadwaita, clap vs lexopt, binary size and clean-build time — P1 · S (#7)
+- [x] **SP-06 Build cost budgets:** GTK4/libadwaita, clap vs lexopt, binary size and clean-build time. `clap` with derive, budgets enforced in CI, ADR-0006 — P1 · S (#7)
 - [ ] **SP-07 Laptop test matrix:** Optimus, MUX, dGPU-only, external ports; recruit testers — P1 · M (#8)
 - [ ] **SP-08 DVC to saturation model:** calibrate the curve used by preview and shader — P2 · M (#9)
 - [ ] **SP-09 Re-apply trigger:** XDG autostart vs udev `SYSTEMD_USER_WANTS` vs opt-in `vividctl watch` — P1 · S (#10)

@@ -1,0 +1,24 @@
+[package]
+name = "sp06-gui"
+description = "SP-06 throwaway: a GTK4 + libadwaita skeleton to measure build cost and binary size"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.88"
+license = "Apache-2.0"
+publish = false
+
+# Standalone on purpose: a spike, not part of the product workspace.
+[workspace]
+
+[dependencies]
+# Feature floors match Ubuntu 24.04: GTK 4.14 and libadwaita 1.5.
+gtk = { package = "gtk4", version = "0.11", features = ["v4_14"] }
+adw = { package = "libadwaita", version = "0.9", features = ["v1_5"] }
+
+# Same release profile as the product workspace.
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

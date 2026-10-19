@@ -1,0 +1,22 @@
+[package]
+name = "sp06-pico-args"
+description = "SP-06 throwaway: the vividctl CLI surface parsed with pico-args"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.88"
+license = "Apache-2.0"
+publish = false
+
+# Standalone on purpose: a spike, not part of the product workspace.
+[workspace]
+
+[dependencies]
+pico-args = "0.5"
+
+# Same release profile as the product workspace.
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

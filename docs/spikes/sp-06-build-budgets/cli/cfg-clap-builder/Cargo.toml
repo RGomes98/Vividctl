@@ -1,0 +1,22 @@
+[package]
+name = "sp06-cfg-clap-builder"
+description = "SP-06 throwaway: serde and toml together with cfg-clap-builder"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.88"
+license = "Apache-2.0"
+publish = false
+
+[workspace]
+
+[dependencies]
+serde = { version = "1", default-features = false, features = ["std", "derive"] }
+toml = { version = "1", default-features = false, features = ["std", "parse", "serde"] }
+clap = { version = "4", default-features = false, features = ["std", "help", "usage", "error-context"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
