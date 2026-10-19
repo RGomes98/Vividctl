@@ -2,7 +2,7 @@
 
 - Status: accepted
 - Date: 2026-10-19
-- Spike: #2 (notes in `docs/spikes/SP-01-nvkms-pure-rust.md`)
+- Spike: #2 (notes in `docs/spikes/sp-01-nvkms/README.md`)
 
 ## Context
 
