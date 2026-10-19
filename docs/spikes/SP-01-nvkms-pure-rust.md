@@ -1,6 +1,6 @@
 # SP-01: NVKMS Digital Vibrance in pure Rust
 
-Issue: #2. Status: in progress (the visual test is pending). The ADR is `docs/adr/0001-nvkms-pure-rust.md`, written once the test is done.
+Issue: #2. Status: done, decision is go. The ADR is `docs/adr/0001-nvkms-pure-rust.md`.
 
 ## Environment
 
@@ -56,7 +56,6 @@ Every rejection is `EPERM`, so errno alone cannot tell a wrong version from a wr
 - nvibrant takes per-output values as positional arguments in connector order (`nvibrant 0 0 0 0 512` meant "the fifth connector"). Output identity needs a better key (SP-05, #6).
 - Sparse layouts keep the Rust side tiny: the per-driver data is a table of sizes and offsets, which `tests/abi` can compare mechanically (SP-02, #3).
 
-## Still to do
+## Visual test
 
-- Visual test: set a different value on the real output, confirm by eye that saturation changes, confirm the readback, and restore. Pending, to be run after a fresh login so the starting value is 0.
-- ADR-0001 with the go/no-go.
+Run after a fresh login, with the starting value at 0 (read back before the test). `pulse 1000 10` set 1000 on HDMI-0, held it for 10 seconds and restored the original value; the readback after the restore was 0. The maintainer confirmed by eye that the Philips PHL 242V8 became visibly more saturated and then returned to normal.
