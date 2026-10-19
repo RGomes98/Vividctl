@@ -8,6 +8,10 @@ import Meta from 'gi://Meta';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 const MAX_MONITORS = 4;
+
+// gjs turns whole JS numbers into G_TYPE_INT, and ShaderEffect silently ignores an int value
+// for a float uniform. Nudge integers so they stay doubles.
+const f = v => (Number.isInteger(v) ? v + 1e-6 : v);
 const EFFECT_NAME = 'vivid-saturation';
 
 // One float uniform set per monitor (x, y, w, h in stage pixels, plus saturation).
@@ -44,15 +48,16 @@ class SaturationEffect extends Clutter.ShaderEffect {
 
     update(monitors, saturations, stageWidth, stageHeight) {
         this.set_uniform_value('tex', 0);
-        this.set_uniform_value('stage_w', stageWidth);
-        this.set_uniform_value('stage_h', stageHeight);
+        this.set_uniform_value('stage_w', f(stageWidth));
+        this.set_uniform_value('stage_h', f(stageHeight));
         for (let i = 0; i < this._count; i++) {
             const m = monitors[i];
-            this.set_uniform_value(`x${i}`, m.x);
-            this.set_uniform_value(`y${i}`, m.y);
-            this.set_uniform_value(`w${i}`, m.width);
-            this.set_uniform_value(`h${i}`, m.height);
-            this.set_uniform_value(`s${i}`, saturations[i]);
+            // Widen each rectangle by a hair so pixels on the borders are never missed.
+            this.set_uniform_value(`x${i}`, f(m.x - 0.01));
+            this.set_uniform_value(`y${i}`, f(m.y - 0.01));
+            this.set_uniform_value(`w${i}`, f(m.width + 0.02));
+            this.set_uniform_value(`h${i}`, f(m.height + 0.02));
+            this.set_uniform_value(`s${i}`, f(saturations[i]));
         }
         this.queue_repaint();
     }
@@ -121,14 +126,35 @@ export class Impl {
     }
 
     SetSaturation(monitor, saturation) {
+        if (monitor === 100) {
+            this._control(saturation);
+            return;
+        }
         if (monitor >= this._saturations.length)
             throw new Error(`no monitor ${monitor}`);
         this._saturations[monitor] = saturation;
         this._apply();
     }
 
+    // Debug control: the stock Clutter desaturate effect on the same actor. If this shows and
+    // our shader does not, the problem is the shader; if neither shows, it is the placement.
+    _control(factor) {
+        if (this._controlEffect) {
+            Main.uiGroup.remove_effect_by_name('vivid-control');
+            this._controlEffect = null;
+        }
+        if (factor > 0) {
+            this._controlEffect = new Clutter.DesaturateEffect({factor: Math.min(1, factor)});
+            Main.uiGroup.add_effect_with_name('vivid-control', this._controlEffect);
+            Main.uiGroup.queue_redraw();
+        }
+    }
+
     Describe() {
+        const effects = Main.uiGroup.get_effects().map(e => `${e.constructor.name}:${e.enabled}`);
+        log(`vivid-spike describe effects=${effects.join(',')} sats=${this._saturations}`);
         return JSON.stringify({
+            effects,
             monitors: this._monitors().map((m, i) => ({
                 index: i, x: m.x, y: m.y, width: m.width, height: m.height,
                 saturation: this._saturations[i],
