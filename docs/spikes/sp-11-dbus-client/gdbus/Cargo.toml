@@ -1,0 +1,19 @@
+[package]
+name = "sp11-gdbus"
+description = "SP-11 throwaway: read the Mutter monitors by running the gdbus tool"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.88"
+license = "Apache-2.0"
+publish = false
+
+[workspace]
+
+[dependencies]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
