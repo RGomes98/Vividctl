@@ -1,6 +1,6 @@
 # ADR-0001: Control Digital Vibrance through NVKMS ioctls from pure Rust
 
-- Status: accepted
+- Status: accepted (the layout-selection part is refined by ADR-0004)
 - Date: 2026-10-19
 - Spike: #2 (notes in `docs/spikes/sp-01-nvkms/README.md`)
 
