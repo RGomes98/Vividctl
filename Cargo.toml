@@ -18,11 +18,12 @@ vivid-config = { path = "crates/vivid-config" }
 vivid-outputs = { path = "crates/vivid-outputs" }
 vivid-nvkms = { path = "crates/vivid-nvkms" }
 vivid-gnome = { path = "crates/vivid-gnome" }
-vivid-engine = { path = "crates/vivid-engine" }
+vivid-engine = { path = "crates/vivid-engine", default-features = false }
 
 # External crates
 # Every entry needs a row in docs/dependencies.md (reason, why not std, compile cost, transitive count).
 rustix = { version = "1", default-features = false, features = ["std", "fs"] }
+dbus = { version = "0.9", default-features = false }
 clap = { version = "4", default-features = false, features = ["std", "derive", "help", "usage", "error-context", "suggestions"] }
 
 [workspace.lints.rust]
