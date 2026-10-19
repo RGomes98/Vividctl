@@ -46,6 +46,25 @@ pub enum Command {
         #[arg(long, value_name = "MONITOR")]
         output: Option<String>,
     },
+    /// Install, check or remove the GNOME Shell extension that controls the outputs NVIDIA does not drive
+    #[cfg(feature = "gnome")]
+    Extension {
+        /// What to do with the extension
+        #[command(subcommand)]
+        action: ExtensionAction,
+    },
+}
+
+/// What to do with the GNOME Shell extension.
+#[cfg(feature = "gnome")]
+#[derive(Subcommand, Debug, PartialEq, Eq)]
+pub enum ExtensionAction {
+    /// Copy the extension that comes with this vividctl into your user directory and enable it
+    Install,
+    /// Say whether the extension is installed, enabled and running
+    Status,
+    /// Disable the extension and delete its files
+    Remove,
 }
 
 #[cfg(test)]
@@ -62,6 +81,20 @@ mod tests {
     /// The command, or `None` when the arguments are rejected.
     fn read(args: &[&str]) -> Option<Command> {
         parse(args).ok()
+    }
+
+    #[cfg(feature = "gnome")]
+    #[test]
+    fn the_extension_subcommands_are_read() {
+        for (word, action) in [
+            ("install", ExtensionAction::Install),
+            ("status", ExtensionAction::Status),
+            ("remove", ExtensionAction::Remove),
+        ] {
+            assert_eq!(read(&["extension", word]), Some(Command::Extension { action }));
+        }
+        assert_eq!(read(&["extension"]), None, "the action is required");
+        assert_eq!(read(&["extension", "bogus"]), None);
     }
 
     #[test]
