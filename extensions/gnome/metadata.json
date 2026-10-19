@@ -1,0 +1,8 @@
+{
+  "uuid": "vividctl@rgomes98.github.io",
+  "name": "Vividctl",
+  "description": "Digital Vibrance for outputs the NVIDIA GPU does not drive. Applies a saturation shader per monitor, controlled over D-Bus by the vividctl command line.",
+  "shell-version": ["46", "47", "48", "49", "50"],
+  "url": "https://github.com/RGomes98/Vividctl",
+  "version": 1
+}
