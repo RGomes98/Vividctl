@@ -11,6 +11,8 @@ publish = false
 
 [dependencies]
 # Internal crates
+vivid-core = { workspace = true }
+vivid-nvkms = { workspace = true }
 
 # External crates
 

@@ -13,11 +13,23 @@ Digital Vibrance (color saturation) control for Linux on Wayland. Fast, small, a
 - Persist across restarts. Scriptable through a CLI.
 - Break less when a new NVIDIA driver ships: version probing, ABI conformance CI, and a `doctor` command that explains failures.
 
-## Planned interface
+## Usage
+
+Works today, for outputs an NVIDIA GPU drives (the internal panel of a hybrid laptop is not one of them yet):
 
 ```
-vividctl list                    # outputs and which backend controls each
-vividctl set --output DP-1 512   # Digital Vibrance, -1024..=1023
+vividctl list [--json]                       # outputs, their state, vibrance and monitor identity
+vividctl get [--output MONITOR]              # current vibrance
+vividctl set 512 [--output MONITOR]          # Digital Vibrance, -1024 to 1023, 0 is neutral
+vividctl set -300 --output HDMI-0
+vividctl reset [--output MONITOR]            # back to neutral
+```
+
+`MONITOR` is the identity `list` shows, such as `PHL:PHL 242V8:0x00008fac` (it follows the monitor from port to port; add `#2` to tell identical monitors apart), or a connector name such as `HDMI-0`. Without `--output`, every connected output is used. A failure on one output does not stop the others and the exit status is 1. Results go to stdout, diagnostics to stderr.
+
+Planned:
+
+```
 vividctl apply                   # apply the saved profile (used at login)
 vividctl preset save gaming
 vividctl doctor                  # diagnose driver, kernel module, hybrid setups
