@@ -1,0 +1,24 @@
+[package]
+name = "vivid-gui"
+description = "The Vivid GTK4/libadwaita graphical interface"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# Internal crates
+vivid-color = { workspace = true }
+vivid-engine = { workspace = true }
+
+# External crates
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "vivid"
+path = "src/main.rs"

@@ -1,0 +1,19 @@
+[package]
+name = "vivid-outputs"
+description = "Display output discovery through sysfs/DRM and stable output identification"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# Internal crates
+vivid-core = { workspace = true }
+
+# External crates
+
+[lints]
+workspace = true

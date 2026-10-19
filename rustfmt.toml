@@ -1,0 +1,23 @@
+# Indentation: Strictly use spaces (4) instead of tabs
+hard_tabs = false
+
+# Layout: Increase max width to 120 characters
+max_width = 120
+
+# Import Organization: Enforce strict hierarchy (std -> external -> internal)
+group_imports = "StdExternalCrate"
+reorder_imports = true
+reorder_modules = true
+
+# Syntax: Enforce trailing commas in multi-line lists
+trailing_comma = "Vertical"
+
+# Import Style: Merge imports from the same crate (e.g., use std::{fs, io})
+imports_granularity = "Crate"
+
+# Struct Layout: Vertically align struct fields
+struct_field_align_threshold = 20
+
+# Code Style: Standard block indentation, but wrap function calls early (80 chars)
+indent_style = "Block"
+fn_call_width = 80

@@ -1,0 +1,47 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "xtask"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.88"
+license = "Apache-2.0"
+authors = ["Renan Gomes Tavares"]
+repository = "https://github.com/RGomes98/vividctl"
+
+[workspace.dependencies]
+# Internal crates
+vivid-core = { path = "crates/vivid-core" }
+vivid-color = { path = "crates/vivid-color" }
+vivid-config = { path = "crates/vivid-config" }
+vivid-outputs = { path = "crates/vivid-outputs" }
+vivid-nvkms = { path = "crates/vivid-nvkms" }
+vivid-gnome = { path = "crates/vivid-gnome" }
+vivid-engine = { path = "crates/vivid-engine" }
+
+# External crates
+# Every entry needs a row in docs/dependencies.md (reason, why not std, compile cost, transitive count).
+
+[workspace.lints.rust]
+# Safe crates also carry #![forbid(unsafe_code)]; only vivid-nvkms may use unsafe.
+unsafe_code = "deny"
+unsafe_op_in_unsafe_fn = "deny"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+indexing_slicing = "deny"
+undocumented_unsafe_blocks = "deny"
+module_name_repetitions = "allow"
+missing_errors_doc = "allow"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

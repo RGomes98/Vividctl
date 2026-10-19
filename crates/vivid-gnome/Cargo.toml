@@ -1,0 +1,19 @@
+[package]
+name = "vivid-gnome"
+description = "GNOME Shell compositor backend for outputs the NVIDIA display engine does not drive"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# Internal crates
+vivid-core = { workspace = true }
+
+# External crates
+
+[lints]
+workspace = true

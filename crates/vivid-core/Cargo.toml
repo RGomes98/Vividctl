@@ -1,0 +1,18 @@
+[package]
+name = "vivid-core"
+description = "Domain types, error model and the Backend trait shared by every vividctl crate"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# Internal crates
+
+# External crates
+
+[lints]
+workspace = true

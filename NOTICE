@@ -1,0 +1,14 @@
+vividctl
+Copyright 2026 Renan Gomes Tavares
+
+Licensed under the Apache License, Version 2.0.
+
+Third-party notice
+------------------
+The NVKMS ioctl structure layouts in crates/vivid-nvkms are derived from the
+public headers of NVIDIA's open-gpu-kernel-modules
+(https://github.com/NVIDIA/open-gpu-kernel-modules), which are available
+under the MIT license:
+
+  Copyright (c) NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+  SPDX-License-Identifier: MIT

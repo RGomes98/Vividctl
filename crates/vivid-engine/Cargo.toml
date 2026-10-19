@@ -1,0 +1,23 @@
+[package]
+name = "vivid-engine"
+description = "Use cases shared by the CLI and GUI: resolve, apply, verify, fall back, diagnose"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# Internal crates
+vivid-gnome = { workspace = true }
+vivid-nvkms = { workspace = true }
+vivid-outputs = { workspace = true }
+vivid-config = { workspace = true }
+vivid-core = { workspace = true }
+
+# External crates
+
+[lints]
+workspace = true
