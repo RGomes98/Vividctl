@@ -95,3 +95,15 @@ jobs:
           key: cargo-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/Cargo.lock', 'rust-toolchain.toml') }}
           restore-keys: cargo-${{ runner.os }}-${{ github.job }}-
       - run: cargo +1.88 check --workspace
+
+  gnome-extension:
+    needs: format
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The two LTS releases the project supports: GNOME Shell 46 and 50.
+        ubuntu: ["24.04", "26.04"]
+    steps:
+      - uses: actions/checkout@v4
+      - run: extensions/gnome/test/run.sh ${{ matrix.ubuntu }}
