@@ -124,7 +124,7 @@ mod tests {
         shell.extension = None;
         let error = GnomeBackend::new(shell).probe().expect_err("no extension");
         assert!(
-            matches!(&error, BackendError::Unavailable(m) if m.contains("install.sh")),
+            matches!(&error, BackendError::Unavailable(m) if m.contains("vividctl extension install")),
             "{error}"
         );
     }

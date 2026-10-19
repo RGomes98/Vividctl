@@ -5,12 +5,15 @@
 //! - [`Listing`] and [`Entry`] are the outputs found, with the identity of the connected ones
 //! - [`Selector`] is how the user names a monitor: by identity or by connector name
 //! - [`GnomeBackend`] (feature `gnome`) drives the outputs Mutter owns through the Shell extension
+//! - [`extension::ExtensionInstaller`] (feature `gnome`) installs the Shell extension that goes with it
 //! - [`Outcome`] is the result for one output; an action on several never stops at the first failure
 
 #![forbid(unsafe_code)]
 
 mod engine;
 mod error;
+#[cfg(feature = "gnome")]
+pub mod extension;
 #[cfg(feature = "gnome")]
 mod gnome;
 mod selector;
