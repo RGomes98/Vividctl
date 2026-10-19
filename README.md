@@ -26,11 +26,11 @@ vivid                            # GUI (GTK4 + libadwaita), started on demand
 
 ## Supported platforms (target)
 
-| | Ubuntu 24.04 LTS | Ubuntu 26.04 LTS | Ubuntu 26.10 |
-|---|---|---|---|
-| GNOME | 46 | 50 | best effort |
-| NVIDIA open driver | 595 | current | best effort |
-| Session | Wayland | Wayland | Wayland |
+|                    | Ubuntu 24.04 LTS | Ubuntu 26.04 LTS |
+| ------------------ | ---------------- | ---------------- |
+| GNOME              | 46               | 50               |
+| NVIDIA open driver | 595              | current          |
+| Session            | Wayland          | Wayland          |
 
 X11 is out of scope.
 
