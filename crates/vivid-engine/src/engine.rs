@@ -1,9 +1,15 @@
 //! The use cases shared by the command line and the GUI: list the outputs of every backend, name
 //! one, read it and change it.
 
-use vivid_core::{Backend, BackendError, BackendOutput, OutputId, Vibrance, assign_ids};
+use std::collections::BTreeMap;
+
+use vivid_core::{Backend, BackendError, BackendOutput, MonitorSpec, OutputId, Vibrance, assign_ids};
+#[cfg(feature = "gnome")]
+use vivid_gnome::SessionBus;
 use vivid_nvkms::NvkmsBackend;
 
+#[cfg(feature = "gnome")]
+use crate::GnomeBackend;
 use crate::{SelectError, Selector};
 
 /// One backend, ready or not.
@@ -127,6 +133,38 @@ fn describe(entry: &Entry) -> String {
         .map_or_else(|| format!("{}/{}", entry.backend, entry.output.connector), ToString::to_string)
 }
 
+/// Keeps each physical monitor once, with the backend that is listed first.
+///
+/// A monitor on an NVIDIA port is seen by NVKMS and also by Mutter, under different connector
+/// names. The same monitor has the same [`MonitorSpec`] in both (ADR-0003), so a connected output
+/// whose spec was already claimed by an earlier backend is dropped. The comparison is by count: two
+/// identical monitors seen once by NVKMS and twice by Mutter leave one for Mutter, which is the one
+/// on the iGPU port.
+fn drop_duplicates(entries: &mut Vec<Entry>) {
+    entries.sort_by(|a, b| (a.slot, &a.output.connector).cmp(&(b.slot, &b.output.connector)));
+    // Per spec: how many monitors earlier backends claimed, and the count in the backend being read.
+    let mut claimed: BTreeMap<MonitorSpec, usize> = BTreeMap::new();
+    let mut current: BTreeMap<MonitorSpec, (usize, usize)> = BTreeMap::new();
+    let keep: Vec<bool> = entries
+        .iter()
+        .map(|entry| {
+            if !entry.output.connected {
+                return true;
+            }
+            let (slot, seen): &mut (usize, usize) = current.entry(entry.output.spec.clone()).or_insert((entry.slot, 0));
+            if *slot != entry.slot {
+                let before: &mut usize = claimed.entry(entry.output.spec.clone()).or_insert(0);
+                *before = (*before).max(*seen);
+                (*slot, *seen) = (entry.slot, 0);
+            }
+            *seen += 1;
+            *seen > claimed.get(&entry.output.spec).copied().unwrap_or(0)
+        })
+        .collect();
+    let mut keep = keep.into_iter();
+    entries.retain(|_| keep.next().unwrap_or(true));
+}
+
 /// The result of acting on one output.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Outcome<T> {
@@ -152,13 +190,23 @@ impl Engine {
         Self { slots }
     }
 
-    /// The backends of this system: NVKMS for outputs an NVIDIA GPU drives.
+    /// The backends of this system, in order of preference: NVKMS for outputs an NVIDIA GPU drives
+    /// (it acts on the display hardware), then the GNOME Shell extension for the rest.
     #[must_use]
     pub fn system() -> Self {
         let nvkms: Slot = match NvkmsBackend::open_system() {
             Ok(backend) => Slot::ready("nvkms", Box::new(backend)),
             Err(error) => Slot::unavailable("nvkms", error),
         };
+        #[cfg(feature = "gnome")]
+        {
+            let gnome: Slot = match SessionBus::connect() {
+                Ok(bus) => Slot::ready("gnome", Box::new(GnomeBackend::new(bus))),
+                Err(error) => Slot::unavailable("gnome", error.into()),
+            };
+            Self::new(vec![nvkms, gnome])
+        }
+        #[cfg(not(feature = "gnome"))]
         Self::new(vec![nvkms])
     }
 
@@ -201,6 +249,7 @@ impl Engine {
                 }),
             }
         }
+        drop_duplicates(&mut listing.entries);
         listing
             .entries
             .sort_by(|a, b| (a.backend, &a.output.connector).cmp(&(b.backend, &b.output.connector)));
@@ -536,5 +585,104 @@ mod tests {
         }
         let engine: Engine = Engine::new(vec![Slot::ready("dead", Box::new(Dead))]);
         assert_eq!(engine.reports()[0].status, Err(BackendError::Unavailable("no driver".into())));
+    }
+
+    fn two(first: Fake, second: Fake) -> Engine {
+        Engine::new(vec![
+            Slot::ready(first.name, Box::new(first)),
+            Slot::ready(second.name, Box::new(second)),
+        ])
+    }
+
+    fn connectors(listing: &Listing) -> Vec<(&'static str, String)> {
+        listing
+            .entries
+            .iter()
+            .map(|e| (e.backend, e.output.connector.clone()))
+            .collect()
+    }
+
+    #[test]
+    fn a_monitor_seen_by_two_backends_is_listed_once_under_the_first() {
+        let mut engine = two(
+            Fake::new("nvkms", vec![(1, "HDMI-0", phl(), true)]),
+            Fake::new("gnome", vec![(0, "HDMI-1", phl(), true)]),
+        );
+        assert_eq!(connectors(&engine.listing()), [("nvkms", "HDMI-0".to_owned())]);
+    }
+
+    #[test]
+    fn the_internal_panel_only_mutter_sees_is_kept_next_to_the_nvidia_monitor() {
+        let panel: MonitorSpec = MonitorSpec::new("AUO", "0x1234", "0x00000000");
+        let mut engine = two(
+            Fake::new("nvkms", vec![(1, "HDMI-0", phl(), true)]),
+            Fake::new("gnome", vec![(0, "eDP-1", panel, true), (1, "HDMI-1", phl(), true)]),
+        );
+        assert_eq!(
+            connectors(&engine.listing()),
+            [("gnome", "eDP-1".to_owned()), ("nvkms", "HDMI-0".to_owned())]
+        );
+    }
+
+    #[test]
+    fn the_first_registered_backend_wins_whatever_its_name() {
+        let mut engine = two(
+            Fake::new("gnome", vec![(0, "HDMI-1", phl(), true)]),
+            Fake::new("nvkms", vec![(1, "HDMI-0", phl(), true)]),
+        );
+        assert_eq!(connectors(&engine.listing()), [("gnome", "HDMI-1".to_owned())]);
+    }
+
+    #[test]
+    fn identical_monitors_are_matched_by_count() {
+        // One twin on an NVIDIA port, both twins known to Mutter: one is left for Mutter.
+        let mut engine = two(
+            Fake::new("nvkms", vec![(1, "HDMI-0", twin(), true)]),
+            Fake::new("gnome", vec![(0, "DP-1", twin(), true), (1, "HDMI-1", twin(), true)]),
+        );
+        let listing: Listing = engine.listing();
+        assert_eq!(listing.entries.len(), 2);
+        assert_eq!(listing.entries.iter().filter(|e| e.backend == "nvkms").count(), 1);
+        let slots: Vec<Option<u32>> = listing
+            .entries
+            .iter()
+            .map(|e| e.id.as_ref().and_then(OutputId::slot))
+            .collect();
+        assert!(slots.contains(&Some(1)) && slots.contains(&Some(2)), "{slots:?}");
+    }
+
+    #[test]
+    fn outputs_of_one_backend_are_never_merged_with_each_other() {
+        let mut engine = engine(Fake::new("nvkms", vec![(1, "DP-0", twin(), true), (2, "DP-1", twin(), true)]));
+        assert_eq!(engine.listing().entries.len(), 2);
+    }
+
+    #[test]
+    fn a_disconnected_output_does_not_claim_a_monitor() {
+        let mut engine = two(
+            Fake::new("nvkms", vec![(1, "DP-0", phl(), false)]),
+            Fake::new("gnome", vec![(0, "HDMI-1", phl(), true)]),
+        );
+        let listing: Listing = engine.listing();
+        assert_eq!(listing.entries.iter().filter(|e| e.output.connected).count(), 1);
+        assert!(
+            listing
+                .entries
+                .iter()
+                .any(|e| e.backend == "gnome" && e.output.connected)
+        );
+    }
+
+    #[test]
+    fn acting_on_a_shared_monitor_goes_to_the_first_backend_only() {
+        let mut engine = two(
+            Fake::new("nvkms", vec![(1, "HDMI-0", phl(), true)]),
+            Fake::new("gnome", vec![(0, "HDMI-1", phl(), true)]),
+        );
+        let listing: Listing = engine.listing();
+        let targets: Vec<&Entry> = listing.select(None, "").expect("connected");
+        let outcomes = engine.set_all(&targets, Vibrance::clamped(200));
+        assert_eq!(outcomes.len(), 1);
+        assert_eq!(outcomes[0].backend, "nvkms");
     }
 }

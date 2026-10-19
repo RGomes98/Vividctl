@@ -4,14 +4,19 @@
 //! - [`Engine`] holds the backends ([`Slot`]) and acts on their outputs
 //! - [`Listing`] and [`Entry`] are the outputs found, with the identity of the connected ones
 //! - [`Selector`] is how the user names a monitor: by identity or by connector name
+//! - [`GnomeBackend`] (feature `gnome`) drives the outputs Mutter owns through the Shell extension
 //! - [`Outcome`] is the result for one output; an action on several never stops at the first failure
 
 #![forbid(unsafe_code)]
 
 mod engine;
 mod error;
+#[cfg(feature = "gnome")]
+mod gnome;
 mod selector;
 
 pub use engine::{BackendReport, Engine, Entry, Listing, Outcome, Problem, Slot};
 pub use error::SelectError;
+#[cfg(feature = "gnome")]
+pub use gnome::GnomeBackend;
 pub use selector::Selector;

@@ -17,6 +17,11 @@ vivid-engine = { workspace = true }
 # External crates
 clap = { workspace = true }
 
+[features]
+default = ["gnome"]
+# The GNOME Shell backend; needs libdbus-1-dev and pkg-config to build.
+gnome = ["vivid-engine/gnome"]
+
 [lints]
 workspace = true
 
