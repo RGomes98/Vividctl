@@ -11,8 +11,10 @@ publish = false
 
 [dependencies]
 # Internal crates
+vivid-core = { workspace = true }
 
 # External crates
+rustix = { workspace = true }
 
 [lints]
 workspace = true
