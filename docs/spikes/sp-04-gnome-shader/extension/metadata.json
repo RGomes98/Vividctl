@@ -1,0 +1,7 @@
+{
+  "uuid": "vivid-spike@vividctl.dev",
+  "name": "Vivid spike",
+  "description": "SP-04 throwaway: saturation shader over the whole stage, controlled over D-Bus.",
+  "shell-version": ["46", "47", "48", "49", "50"],
+  "version": 1
+}
