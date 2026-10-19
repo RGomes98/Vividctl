@@ -11,11 +11,6 @@ publish = false
 
 [dependencies]
 # Internal crates
-vivid-gnome = { workspace = true }
-vivid-nvkms = { workspace = true }
-vivid-outputs = { workspace = true }
-vivid-config = { workspace = true }
-vivid-core = { workspace = true }
 
 # External crates
 

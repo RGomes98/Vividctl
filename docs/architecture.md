@@ -16,6 +16,7 @@
 | `xtask` | abi-check, completions, man pages, packaging | |
 
 Dependency direction: `core` <- `color`, `config`, `outputs`, `nvkms`, `gnome` <- `engine` <- `cli`, `gui`.
+Internal dependency edges are declared in a crate's `Cargo.toml` when the crate starts using them, because `cargo-machete` rejects unused ones in CI.
 
 ## Backend selection
 

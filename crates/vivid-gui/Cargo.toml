@@ -11,8 +11,6 @@ publish = false
 
 [dependencies]
 # Internal crates
-vivid-color = { workspace = true }
-vivid-engine = { workspace = true }
 
 # External crates
 
