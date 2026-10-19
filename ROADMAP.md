@@ -10,11 +10,11 @@ Priority: `P0` critical, `P1` high, `P2` medium, `P3` low, `Icebox` unscheduled.
 Gate: SP-01 and SP-04 decide whether the NVKMS + GNOME strategy holds. If SP-04 fails, fall back to NVKMS-only plus a documented limitation, and revisit the laptop decision.
 
 - [x] **Repository bootstrap:** workspace, toolchain, rustfmt, lints, deny, CI, contribution docs, issue templates — P0 · M (#1)
-- [ ] **SP-01 NVKMS in pure Rust:** set Digital Vibrance via `rustix` + hand-written structs on driver 595 — P0 · M (#2)
-- [ ] **SP-02 ABI map:** NVKMS struct changes across driver tags 535 to 610; is there a readback ioctl — P0 · M (#3)
+- [x] **SP-01 NVKMS in pure Rust:** set Digital Vibrance via `rustix` + hand-written structs on driver 595. Go, ADR-0001 — P0 · M (#2)
+- [x] **SP-02 ABI map:** NVKMS struct changes across driver tags 535 to 615; readback exists in all. 10 generations, ADR-0004 — P0 · M (#3)
 - [ ] **SP-03 Persistence matrix:** suspend/resume, VT switch, hotplug, mode change, compositor restart, fullscreen/VRR, HDR — P1 · M (#4)
-- [ ] **SP-04 GNOME Shell shader PoC:** shell 46 and 50, fullscreen games/unredirect, per-monitor, cost — P0 · L (#5)
-- [ ] **SP-05 Stable output identity:** NVKMS dpy to DRM connector to EDID to Mutter monitor — P1 · M (#6)
+- [x] **SP-04 GNOME Shell shader PoC:** shell 46 and 50, fullscreen games/unredirect, per-monitor, cost. Go with conditions, ADR-0002 — P0 · L (#5)
+- [x] **SP-05 Stable output identity:** NVKMS dpy to DRM connector to EDID to Mutter monitor. ADR-0003 — P1 · M (#6)
 - [ ] **SP-06 Build cost budgets:** GTK4/libadwaita, clap vs lexopt, binary size and clean-build time — P1 · S (#7)
 - [ ] **SP-07 Laptop test matrix:** Optimus, MUX, dGPU-only, external ports; recruit testers — P1 · M (#8)
 - [ ] **SP-08 DVC to saturation model:** calibrate the curve used by preview and shader — P2 · M (#9)
