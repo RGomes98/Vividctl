@@ -4,10 +4,10 @@
 
 | Crate | Role | Notes |
 |---|---|---|
-| `vivid-core` | Domain types (`Vibrance`, `OutputId`, `Profile`), `Backend` trait, errors | No I/O |
+| `vivid-core` | Domain types (`Vibrance`, `OutputId`, `Profile`), minimal EDID reader, `Backend` trait, errors | No I/O, no dependencies |
 | `vivid-color` | DVC to saturation math, shared by previews and shaders | Zero deps |
 | `vivid-config` | TOML config, XDG paths, atomic writes | |
-| `vivid-outputs` | Output discovery via sysfs/DRM, EDID-based identity | |
+| `vivid-outputs` | Output discovery via sysfs/DRM (reads the EDID bytes, `vivid-core` parses them) | |
 | `vivid-nvkms` | NVIDIA NVKMS ioctl backend | Only crate with `unsafe` |
 | `vivid-gnome` | GNOME Shell extension client (D-Bus) | Feature-gated |
 | `vivid-engine` | Use cases: resolve, apply, verify, fall back, diagnose | Shared by CLI and GUI |
