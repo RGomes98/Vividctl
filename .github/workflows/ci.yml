@@ -29,6 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: rustup show
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libdbus-1-dev pkg-config
       - uses: actions/cache@v4
         with:
           path: |
@@ -47,6 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: rustup show
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libdbus-1-dev pkg-config
       - uses: actions/cache@v4
         with:
           path: |
@@ -85,6 +87,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: rustup toolchain install 1.88 --profile minimal
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libdbus-1-dev pkg-config
       - uses: actions/cache@v4
         with:
           path: |
@@ -98,7 +101,8 @@ jobs:
 
   gnome-extension:
     needs: format
-    runs-on: ubuntu-latest
+    # Pinned: the binary built here must run on the oldest container below, so its glibc cannot move up.
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -106,4 +110,17 @@ jobs:
         ubuntu: ["24.04", "26.04"]
     steps:
       - uses: actions/checkout@v4
-      - run: extensions/gnome/test/run.sh ${{ matrix.ubuntu }}
+      - run: rustup show
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libdbus-1-dev pkg-config
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: cargo-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/Cargo.lock', 'rust-toolchain.toml') }}
+          restore-keys: cargo-${{ runner.os }}-${{ github.job }}-
+      - run: cargo build --release --package vivid-cli
+      # The real command line against the real extension and Mutter, then the extension on its own.
+      - run: VIVIDCTL=target/release/vividctl extensions/gnome/test/run.sh ${{ matrix.ubuntu }}
