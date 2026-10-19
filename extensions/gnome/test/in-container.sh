@@ -130,6 +130,27 @@ PY
     # --- reset is neutral and gives fullscreen windows back
     prop UnredirectDisabled | grep -q "<false>" && ok "unredirect is restored at neutral" || fail "unredirect not restored"
 
+    # --- the real vividctl against the real extension (only when a binary was handed in)
+    if [ -x /vividctl ]; then
+        vc() { /vividctl "$@" 2>&1; }
+        says_vc() { local pattern="$1" out; shift; out="$(vc "$@")"; grep -q -- "$pattern" <<<"$out"; }
+        says_vc "gnome: GNOME Shell .* extension, interface 1" list && ok "vividctl list finds the extension" || fail "vividctl list does not show the gnome backend: $(vc list | head -3)"
+        for conn in "$left" "$right"; do
+            vc list | grep -q "^gnome  *$conn " && ok "vividctl list shows $conn" || fail "vividctl list misses $conn"
+        done
+        vc set 512 --output "$right" >/dev/null && ok "vividctl set 512 succeeds on $right" || fail "vividctl set failed on $right"
+        awk -v v="$(getsat "$right")" 'BEGIN { exit !(v > 1.49 && v < 1.51) }' \
+            && ok "the extension holds the mapped saturation (about 1.5)" || fail "saturation after set 512 is '$(getsat "$right")'"
+        [ "$(vc get --output "$right" | grep -o -- '-\?[0-9][0-9]*$' | tail -1)" = "512" ] && ok "vividctl get reads 512 back" || fail "vividctl get: $(vc get --output "$right")"
+        [ "$(getsat "$left")" = "1" ] && ok "vividctl set --output leaves the other monitor alone" || fail "the other monitor changed"
+        vc set -300 --output "$left" >/dev/null && vc get --output "$left" | grep -q -- '-300' && ok "a negative vibrance round-trips" || fail "negative vibrance did not round-trip"
+        vc reset >/dev/null && [ "$(getsat "$left")" = "1" ] && [ "$(getsat "$right")" = "1" ] && ok "vividctl reset returns every monitor to neutral" || fail "reset left a monitor boosted"
+        vc set 100 --output no-such-monitor >/dev/null; rc=$?
+        { [ "$rc" -eq 1 ] || [ "$rc" -eq 2 ]; } && ok "an unknown monitor is a failure (exit $rc)" || fail "unknown monitor gave exit $rc"
+    else
+        echo "SKIP  no /vividctl binary: the end-to-end check needs VIVIDCTL=path/to/vividctl"
+    fi
+
     # --- disabling the extension releases the bus name and the effect
     if command -v gnome-extensions >/dev/null; then
         call SetSaturation "$right" 1.5 >/dev/null

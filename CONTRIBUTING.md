@@ -7,6 +7,14 @@ rustup show                       # installs the pinned stable toolchain
 rustup toolchain install nightly --component rustfmt   # formatting only
 ```
 
+The GNOME backend links the system `libdbus-1`, so building needs its headers:
+
+```
+sudo apt install libdbus-1-dev pkg-config
+```
+
+Without them, build the NVKMS backend alone with `--no-default-features` on `vivid-cli` or `vivid-engine`.
+
 Set `rust-analyzer.check.command` to `clippy` in your editor; CI fails on clippy warnings.
 
 ## Workflow

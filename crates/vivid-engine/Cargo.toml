@@ -13,8 +13,15 @@ publish = false
 # Internal crates
 vivid-core = { workspace = true }
 vivid-nvkms = { workspace = true }
+vivid-color = { workspace = true, optional = true }
+vivid-gnome = { workspace = true, optional = true }
 
 # External crates
+
+[features]
+default = ["gnome"]
+# The GNOME Shell backend needs libdbus at build time; without it only NVKMS is built.
+gnome = ["dep:vivid-color", "dep:vivid-gnome"]
 
 [lints]
 workspace = true

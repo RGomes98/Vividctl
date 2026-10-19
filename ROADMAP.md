@@ -41,8 +41,8 @@ Gate: SP-01 and SP-04 decide whether the NVKMS + GNOME strategy holds. If SP-04 
 **Goal:** the internal panel of hybrid laptops is controllable; backend chosen per output.
 
 - [x] **GNOME Shell extension:** saturation shader, shell 46 to 50 — P0 · L (#22)
-- [ ] **D-Bus interface and `vivid-gnome` client** — P0 · M (#23)
-- [ ] **Per-output backend selection in the engine** — P0 · M (#24)
+- [x] **D-Bus interface and `vivid-gnome` client** — P0 · M (#23)
+- [x] **Per-output backend selection in the engine** — P0 · M (#24)
 - [x] **CI with headless gnome-shell** — P1 · M (#25)
 
 ## Phase 3 — GUI (v0.3)

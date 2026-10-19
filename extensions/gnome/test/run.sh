@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds an Ubuntu image with GNOME Shell and runs the extension test in it.
-#   extensions/gnome/test/run.sh [ubuntu-tag]    24.04 (Shell 46), 25.04 (48), 25.10 (49), 26.04 (50, default)
+#   [VIVIDCTL=path/to/vividctl] extensions/gnome/test/run.sh [ubuntu-tag]    24.04 (Shell 46), 25.04 (48), 25.10 (49), 26.04 (50, default)
 # Needs Docker. No GPU and no display: the shell renders in software on two virtual monitors.
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
@@ -15,8 +15,12 @@ trap 'rm -f "$passwd"' EXIT
 docker run --rm "vividctl-gnome:$tag" cat /etc/passwd > "$passwd"
 echo "tester:x:$(id -u):$(id -g)::/tmp/home:/bin/bash" >> "$passwd"
 chmod 644 "$passwd"
+# VIVIDCTL=path/to/vividctl also runs the real command line against the extension.
+extra=()
+[ -z "${VIVIDCTL:-}" ] || extra=(-v "$(realpath "$VIVIDCTL"):/vividctl:ro")
 docker run --rm \
     --user "$(id -u):$(id -g)" -e HOME=/tmp/home \
+    "${extra[@]}" \
     -v "$passwd:/etc/passwd:ro" \
     -v "$here/..:/extension:ro" \
     -v "$here/in-container.sh:/test/in-container.sh:ro" \

@@ -26,8 +26,8 @@
 
 ## Consequences
 
-- `vividctl` grows by about 320 KiB and 4 crates, to about 1.0 MiB and 24, inside the budgets.
-- CI and contributors need `pkg-config` and `libdbus-1-dev` once the first crate depends on `dbus`. That lands with that crate.
+- `vividctl` grows by about 320 KiB and 4 crates, to about 1.0 MiB and 24, inside the budgets. Measured with the GNOME backend in: 1.01 MiB and 25 crates.
+- CI and contributors need `pkg-config` and `libdbus-1-dev` now that `vivid-gnome` depends on `dbus` (CI installs them; `CONTRIBUTING.md` says how to get them).
 - The binary now links a system library dynamically. The `.deb` depends on `libdbus-1-3`.
 - A decoding mismatch against a different Mutter version is an error with the offending type, not a silent misparse.
 
