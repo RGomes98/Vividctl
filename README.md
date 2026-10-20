@@ -35,8 +35,8 @@ NVIDIA's Digital Vibrance slider is the quickest way to make a dull monitor look
 
 <table>
   <tr>
-    <td align="center" width="50%"><img src="docs/assets/before-after-mystic-mountain.jpg" alt="Mystic Mountain nebula, off on the left and on at 400 on the right"><br><sub><b>Mystic Mountain</b> (Hubble)</sub></td>
-    <td align="center" width="50%"><img src="docs/assets/before-after-pillars-of-creation.jpg" alt="The Pillars of Creation in visible light, off on the left and on at 400 on the right: the pillars go from muted brown to deep red-brown against a vivid turquoise sky"><br><sub><b>Pillars of Creation</b> (Hubble)</sub></td>
+    <td align="center" width="50%"><img src="docs/assets/before-after-tarantula-nebula.jpg" alt="Tarantula Nebula, off on the left and on at 400 on the right"><br><sub><b>Tarantula Nebula</b> (Webb)</sub></td>
+    <td align="center" width="50%"><img src="docs/assets/before-after-pillars-of-creation.jpg" alt="The Pillars of Creation, off on the left and on at 400 on the right: the same pillar goes from muted olive to vivid gold and blue"><br><sub><b>Pillars of Creation</b> (Webb)</sub></td>
   </tr>
 </table>
 
