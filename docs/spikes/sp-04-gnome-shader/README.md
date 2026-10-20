@@ -1,6 +1,6 @@
 # SP-04: GNOME Shell saturation shader
 
-Issue: #5. Status: done, decision is go with conditions. Runtime-tested on Shell 46 (real session), and headless in containers on 46, 48, 49 and 50. The ADR is `docs/adr/0002-gnome-shader-backend.md`.
+Issue: #5. Status: done, decision is go with conditions. Runtime-tested on Shell 46 (real session), and headless in containers on 46, 48, 49 and 50. The ADR is `docs/adr/0002-gnome-shader-backend.md`. The production extension that grew out of this proof of concept is in `extensions/gnome/`; this folder keeps the measurements and the throwaway code.
 
 ## Question
 

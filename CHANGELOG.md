@@ -5,10 +5,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+Nothing is released yet; 0.1.0 is described in the [roadmap](ROADMAP.md#release-plan-v010).
+
 ### Added
 
-- **Repo:** Cargo workspace scaffold, CI, lint and dependency policy, contribution docs and issue templates.
-- **CLI:** `vividctl list`, `get`, `set` and `reset` for outputs driven by an NVIDIA GPU, naming a monitor by its identity or by connector.
-- **GNOME:** Shell extension (46 to 50) that boosts saturation per monitor from inside the compositor, with a D-Bus interface and a containerised test in CI.
-- **GNOME backend:** `vividctl list`, `get`, `set` and `reset` also drive the outputs the Shell extension controls, such as the internal panel of a hybrid laptop. The vibrance is converted to a saturation with a provisional curve (SP-08). A monitor an NVIDIA GPU drives is listed once and handled by NVKMS. Building needs `libdbus-1-dev` and `pkg-config`, or `--no-default-features` for the NVKMS backend only.
+- **CLI:** `vividctl list [--json]`, `get`, `set` and `reset`. A monitor is named with `--output` by its identity (`VENDOR:PRODUCT:SERIAL`, which follows the monitor from port to port) or by connector. A failure on one output does not stop the others. See the [user guide](docs/user-guide.md).
+- **NVIDIA backend:** Digital Vibrance through NVKMS from pure Rust, with no per-driver build. It reads the running driver version, picks the interface layout from a table of 10 ABI generations covering drivers 535 to 615 (generated from NVIDIA's headers by `tests/abi`), validates every reply before writing and reads every write back. For a driver the table does not know it tries every layout and refuses if none validates.
+- **GNOME backend:** `vividctl` also drives the outputs a GNOME Shell extension controls, such as the internal panel of a hybrid laptop. A monitor an NVIDIA GPU drives is listed once and handled by NVKMS. The vibrance is converted to a saturation with a provisional curve until the calibration (SP-08).
+- **GNOME Shell extension:** a per-monitor saturation shader for Shell 46 to 50, with a small D-Bus interface (`org.vividctl.Shell1`). Fullscreen unredirect is disabled only while a monitor is not neutral. Tested headless in CI on Shell 46 and 50.
 - **GNOME:** `vividctl extension install`, `status` and `remove`. The extension is embedded in the binary, so it always matches it; installing adds it to the enabled extensions without disturbing the ones already there, and one log in is enough for GNOME Shell on Wayland to load it.
+- **Output identity:** monitors are identified from their EDID in the same form Mutter uses, so the same monitor has the same identity on every backend and port.
+- **Build requirements:** building needs `libdbus-1-dev` and `pkg-config`, or `--no-default-features` on `vivid-cli` for the NVKMS backend only.
+- **Budgets:** CI fails if the `vividctl` binary passes 1.5 MiB or its dependency tree passes 40 crates (it is 1.09 MiB and 25 crates).
+- **Docs:** user guide, architecture, seven decision records (`docs/adr/`) and the measurements behind them (`docs/spikes/`).
+- **Repo:** Cargo workspace, CI (format, clippy, tests, `cargo-deny`, `cargo-machete`, MSRV, budgets, extension tests), lint and dependency policy, contribution docs, issue and pull request templates.
