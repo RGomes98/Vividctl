@@ -69,9 +69,9 @@ Needs Docker. Builds an Ubuntu image with GNOME Shell, starts a headless shell w
 `test/screenshots.sh` takes the desktop twice, neutral and boosted, in a headless Shell in a container, with a wallpaper and no windows. It uses the real extension and the real `vividctl`, so the images show what the extension does, not a mock-up:
 
 ```
-VIVIDCTL=target/release/vividctl extensions/gnome/test/screenshots.sh WALLPAPER.png OUT_DIR
-scripts/split-screenshot.py OUT_DIR/off.png OUT_DIR/on.png OUT_DIR/split.png --crop-top 36 --labels
+SIZE=3840x2400 VIVIDCTL=target/release/vividctl extensions/gnome/test/screenshots.sh WALLPAPER.png OUT_DIR
+scripts/split-screenshot.py OUT_DIR/off.png OUT_DIR/on.png OUT_DIR/split.jpg --crop-top 36 --labels --label-on "vividctl 425"
 ```
 
-`VALUE` (default 400) and `SIZE` (default 1920x1200) are environment variables. A wallpaper of natural, not already saturated colours shows the change best (the `Monument_valley` one that ships with Ubuntu works well; a neon picture clips). The rendering is in software, on a virtual monitor. Only the GNOME backend can be captured this way: an NVKMS change happens in the display hardware, after the compositor, so a screenshot never shows it.
+`VALUE` (default 425) and `SIZE` (default 1920x1200) are environment variables. For the highest detail, give a wallpaper that is already the size of the virtual monitor, so the Shell shows it 1:1. A `.jpg` output is written at quality 100 without chroma subsampling. A wallpaper of natural, not already saturated colours shows the change best (the `Monument_valley` one that ships with Ubuntu works well; a neon picture clips). The rendering is in software, on a virtual monitor. Only the GNOME backend can be captured this way: an NVKMS change happens in the display hardware, after the compositor, so a screenshot never shows it.
 

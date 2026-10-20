@@ -11,9 +11,9 @@
 </p>
 
 <p align="center">
-  <img src="docs/assets/before-after-cosmic-cliffs.jpg" alt="The same wallpaper with vividctl off on the left and on at 400 on the right: the right half has far more vivid orange and blue" width="900">
+  <a href="docs/assets/before-after-cosmic-cliffs.jpg"><img src="docs/assets/before-after-cosmic-cliffs-web.jpg" alt="The same wallpaper with vividctl off on the left and on at 425 on the right: the right half has far more vivid orange and blue" width="900"></a>
   <br>
-  <sub>Left: off. Right: <code>vividctl set 400</code>. See <a href="#see-it">how these were made</a>.</sub>
+  <sub>Left: off. Right: <code>vividctl set 425</code>. Click for the full 3840 px image. See <a href="#see-it">how these were made</a>.</sub>
 </p>
 
 > **Status:** early development, before 0.1.0. It already sets, reads and resets the vibrance of NVIDIA monitors and of the internal panel of a hybrid laptop (GNOME). It does not save your choice yet, so the value does not survive a logout; see [what is left for 0.1.0](ROADMAP.md#release-plan-v010). There are no releases yet: build from source, it takes about a minute.
@@ -35,12 +35,12 @@ NVIDIA's Digital Vibrance slider is the quickest way to make a dull monitor look
 
 <table>
   <tr>
-    <td align="center" width="50%"><img src="docs/assets/before-after-tarantula-nebula.jpg" alt="Tarantula Nebula, off on the left and on at 400 on the right"><br><sub><b>Tarantula Nebula</b> (Webb)</sub></td>
-    <td align="center" width="50%"><img src="docs/assets/before-after-pillars-of-creation.jpg" alt="The Pillars of Creation, off on the left and on at 400 on the right: the same pillar goes from muted olive to vivid gold and blue"><br><sub><b>Pillars of Creation</b> (Webb)</sub></td>
+    <td align="center" width="50%"><a href="docs/assets/before-after-tarantula-nebula.jpg"><img src="docs/assets/before-after-tarantula-nebula-web.jpg" alt="Tarantula Nebula, off on the left and on at 425 on the right"></a><br><sub><b>Tarantula Nebula</b> (Webb)</sub></td>
+    <td align="center" width="50%"><a href="docs/assets/before-after-pillars-of-creation.jpg"><img src="docs/assets/before-after-pillars-of-creation-web.jpg" alt="The Pillars of Creation, off on the left and on at 425 on the right: the same pillar goes from muted olive to vivid gold and blue"></a><br><sub><b>Pillars of Creation</b> (Webb)</sub></td>
   </tr>
 </table>
 
-These are the real extension and the real `vividctl`, set to 400, captured in a test GNOME Shell with the half-and-half join done afterwards. The pictures are public-domain NASA images; see [docs/assets/CREDITS.md](docs/assets/CREDITS.md). A screenshot can only show the GNOME backend: on an NVIDIA monitor the change happens in the display hardware, after the screenshot is taken, so a photo of the screen is the only way to capture it.
+These are the real extension and the real `vividctl`, set to 425, captured in a test GNOME Shell at 3840x2400 with the half-and-half join done afterwards. Click an image for the full-resolution file (JPEG at quality 100). The pictures are public-domain NASA images; see [docs/assets/CREDITS.md](docs/assets/CREDITS.md). A screenshot can only show the GNOME backend: on an NVIDIA monitor the change happens in the display hardware, after the screenshot is taken, so a photo of the screen is the only way to capture it.
 
 ## Does it work in games?
 
