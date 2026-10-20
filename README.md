@@ -60,11 +60,11 @@ cargo build --release -p vivid-cli
 install -m 755 target/release/vividctl ~/.local/bin/vividctl
 
 vividctl list                          # what it found, and which backend controls each output
-vividctl set 300 --output HDMI-0       # -1024 (washed out) to 1023 (saturated), 0 is neutral
+vividctl set 425 --output HDMI-0       # -1024 (washed out) to 1023 (saturated), 0 is neutral
 vividctl reset
 ```
 
-For the internal panel of a laptop, or any output the NVIDIA GPU does not drive, also run `vividctl extension install` and log in again once. A good first value is 200 to 300.
+For the internal panel of a laptop, or any output the NVIDIA GPU does not drive, also run `vividctl extension install` and log in again once. 425 is the value of the pictures above; 200 to 300 is a gentler first try.
 
 The [user guide](docs/user-guide.md) has the rest: requirements, applying a value at every login, troubleshooting, uninstalling.
 
