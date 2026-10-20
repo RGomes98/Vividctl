@@ -38,12 +38,18 @@ Per-monitor identity is not decided here. Mutter and NVKMS name the same connect
 - The backend is a maintenance commitment. In four GNOME versions (46 to 50) two public APIs broke; expect that rate. CI per Shell version is what keeps it honest.
 - The effect is applied to the composited image, so it is global to the monitor: notifications, screenshots and recordings carry it. Excluding captures would need an extra hook and was not explored.
 - Disabling fullscreen unredirect while the effect is active forces composition of fullscreen game frames. The measured cost is small on one setup, but latency and VRR behaviour are unknown and must be tested on real hardware before claiming parity with the NVKMS path.
-- Tests that need screenshots are manual, because `org.gnome.Shell.Screenshot` is denied to external callers.
+- Tests that need screenshots are manual on a normal session, because `org.gnome.Shell.Screenshot` is denied to external callers. A headless Shell started with `--unsafe-mode` allows them, which is how the CI harness checks pixels.
 - On Ubuntu 24.04 with NVIDIA the default login is Xorg; users need to pick the Wayland session. This is a documentation item, not a backend issue.
 
 ## Not covered by this spike
 
-Shell 47 (no Ubuntu release ships it), the behaviour of 48 to 50 on real GPUs and with real games, the Shell 46 headless region quirk, two or more real monitors, fractional scaling and mixed refresh rates, an actual hybrid laptop (#8), latency, VRR, and excluding captures from the effect. These stay open and are tracked by #25, #6 and #8. The headless containers use software rendering, so they validate the API and the logic, not cost.
+Shell 47 (no Ubuntu release ships it), the behaviour of 48 to 50 on real GPUs and with real games, the Shell 46 headless region quirk, two or more real monitors, fractional scaling and mixed refresh rates, an actual hybrid laptop (#8), latency, VRR, and excluding captures from the effect. These stay open (the real-hardware ones under #8). The headless containers use software rendering, so they validate the API and the logic, not cost.
+
+## Follow-up
+
+- The production extension is in `extensions/gnome/`, tested in CI in a headless Shell 46 and 50 (#25). The Shell 46 region quirk did not appear there.
+- `vividctl` drives it from the `gnome` backend (#23, #24), and installs it with `vividctl extension install`. Until the `.deb` exists (decision 6), that command installs the copy embedded in the binary into the user's directory, and `vividctl list` already says when the extension is missing; a `doctor` will say it too.
+- An actual hybrid laptop (Dell Inspiron 16 Plus 7640, panel on the Intel GPU, driver 580.178.04, Ubuntu 26.04, Shell 50.1) was driven from `vividctl`, with a visual check of the panel. Latency, VRR, fractional scaling and two real monitors are still unmeasured.
 
 ## Alternatives considered
 

@@ -4,7 +4,7 @@ Applies a saturation boost to a monitor from inside the compositor. This is how 
 
 It is a small JavaScript module, because GNOME Shell extensions can only be written in JavaScript. All logic that can live outside the compositor (monitor identity, the mapping from vibrance to saturation, persistence) lives in the Rust crates; the extension only draws.
 
-Supported: GNOME Shell 46 to 50 (tested in CI on 46 and 50, and locally on 48 and 49).
+Supported: GNOME Shell 46 to 50. Tested headless in CI on 46 and 50, headless locally on 48 and 49, and in real sessions on 46 (desktop) and 50.1 (hybrid laptop). Shell 47 is not shipped by any Ubuntu release and was never run.
 
 ## Install
 
@@ -45,10 +45,21 @@ gdbus call --session --dest org.vividctl.Shell --object-path /org/vividctl/Shell
     --method org.vividctl.Shell1.SetSaturation eDP-1 1.4
 ```
 
+## Troubleshooting
+
+```
+vividctl extension status
+gnome-extensions info vividctl@rgomes98.github.io
+journalctl --user -b --no-pager | grep -i vividctl
+```
+
+An extension the running shell has not discovered yet needs a log out and in. `Habilitada: Não` (or `Enabled: No`) with state `INITIALIZED` means it is known but off: `gnome-extensions enable vividctl@rgomes98.github.io`. State `ERROR` or `OUT OF DATE` is explained in the journal; `metadata.json` lists Shell 46 to 50.
+
 ## Tests
 
 ```
-extensions/gnome/test/run.sh [24.04|25.04|25.10|26.04]
+cargo build --release -p vivid-cli
+VIVIDCTL=target/release/vividctl extensions/gnome/test/run.sh [24.04|25.04|25.10|26.04]
 ```
 
-Needs Docker. Builds an Ubuntu image with GNOME Shell, starts a headless shell with two virtual monitors and checks the interface, the error cases, the pixels on each monitor (only the boosted one changes), unredirect handling, and disable/enable. A headless Shell older than 48 repaints late; if a pixel check cannot be told apart from that, it is reported as `XFAIL` instead of a failure.
+Needs Docker. Builds an Ubuntu image with GNOME Shell, starts a headless shell with two virtual monitors and checks the interface, the error cases, the pixels on each monitor (only the boosted one changes), unredirect handling, and disable/enable. With `VIVIDCTL` it also installs the extension with the real `vividctl` before the shell starts and runs `list`, `set`, `get`, `reset` and `extension status|install|remove` against it; without it that part is skipped. CI runs it on Ubuntu 24.04 and 26.04. A headless Shell older than 48 repaints late; if a pixel check cannot be told apart from that, it is reported as `XFAIL` instead of a failure.

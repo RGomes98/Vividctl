@@ -22,7 +22,7 @@ Decided against: `zbus` for `vivid-gnome` (85 crates, 1.5 MiB and 43 s of clean 
 
 Checked on every PR by `scripts/check-budgets.sh` (CI job `budgets`) on the stripped release `vividctl`:
 
-| Measure | Ceiling | Today (empty stub) | Expected |
+| Measure | Ceiling | Today | Expected |
 |---|---|---|---|
 | Binary size | 1.5 MiB | 1.09 MiB (1,146,392 bytes, with the GNOME backend and the embedded extension) | 0.8 to 1.1 MiB |
 | Unique crates in the `vivid-cli` tree, workspace crates included | 40 | 25 | about 30 |
