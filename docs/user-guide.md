@@ -94,7 +94,7 @@ When every monitor is back to neutral, the effect is removed and the cost with i
 
 ## Apply it at every login
 
-`vividctl` does not save your choice yet; a proper `apply` and a saved profile are coming. Until then, a small script and an autostart entry do the job. This one sets 400 on `HDMI-0`; change the values, or add one `set` line per monitor:
+`vividctl` does not save your choice yet; a proper `apply` and a saved profile are coming. Until then, a small script and an autostart entry do the job. This one sets 425 on `HDMI-0`, the value of the pictures in the [README](../README.md); change the values, or add one `set` line per monitor:
 
 ```
 mkdir -p ~/.local/bin ~/.config/autostart
@@ -103,7 +103,7 @@ cat > ~/.local/bin/vividctl-apply.sh <<'EOF'
 #!/bin/sh
 # Retries because the session may still be starting (on GNOME, the extension may still be loading).
 for _ in $(seq 1 60); do
-    "$HOME/.local/bin/vividctl" set 400 --output HDMI-0 && exit 0
+    "$HOME/.local/bin/vividctl" set 425 --output HDMI-0 && exit 0
     sleep 1
 done
 exit 1
