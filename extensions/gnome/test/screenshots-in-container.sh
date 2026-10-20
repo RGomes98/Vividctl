@@ -15,7 +15,16 @@ inside() {
     shot() { gdbus call --session --dest org.gnome.Shell.Screenshot --object-path /org/gnome/Shell/Screenshot \
                  --method org.gnome.Shell.Screenshot.Screenshot false false "/out/$1.png" >/dev/null 2>&1; }
     # A headless shell repaints late: a throwaway capture forces a frame, then give it time.
-    settled() { shot "_warm-$1"; sleep 3; shot "$1"; rm -f "/out/_warm-$1.png"; }
+    # The capture is sometimes blank (a few KB) when the repaint is still pending: take it again.
+    settled() {
+        local try
+        for try in 1 2 3 4; do
+            shot "_warm-$1"; sleep 3; shot "$1"; rm -f "/out/_warm-$1.png"
+            [ "$(stat -c %s "/out/$1.png" 2>/dev/null || echo 0)" -gt 100000 ] && return 0
+            echo "capture $1 was blank, try $try" >&2
+        done
+        return 1
+    }
 
     gsettings set org.gnome.shell disable-user-extensions false
     gsettings set org.gnome.shell enabled-extensions "[]"
