@@ -4,7 +4,9 @@
 
     scripts/split-screenshot.py off.png on.png split.png [--crop-top PX] [--crop-bottom PX]
                                                          [--divider PX] [--labels]
+                                                         [--label-off TEXT] [--label-on TEXT] [--quality N]
 
+A `.jpg` output is written at quality 100 without chroma subsampling, the best JPEG can do; `--quality` lowers it.
 Both screenshots must have the same size. Take them one after the other with nothing changing on
 screen, and crop the top bar and the dock away if their clock or icons differ.
 
@@ -59,7 +61,10 @@ def main() -> int:
     parser.add_argument("--crop-top", type=int, default=0, metavar="PX", help="pixels to cut from the top (the top bar)")
     parser.add_argument("--crop-bottom", type=int, default=0, metavar="PX", help="pixels to cut from the bottom (a dock)")
     parser.add_argument("--divider", type=int, default=2, metavar="PX", help="width of the line between the halves, 0 for none")
-    parser.add_argument("--labels", action="store_true", help="write 'vividctl off' and 'vividctl on' in the corners")
+    parser.add_argument("--labels", action="store_true", help="write a caption in each bottom corner")
+    parser.add_argument("--label-off", default="vividctl off", metavar="TEXT", help="caption of the left half (default: 'vividctl off')")
+    parser.add_argument("--label-on", default="vividctl on", metavar="TEXT", help="caption of the right half, such as 'vividctl 425' (default: 'vividctl on')")
+    parser.add_argument("--quality", type=int, default=100, metavar="N", help="JPEG quality, 1 to 100 (default: 100); ignored for other formats")
     args = parser.parse_args()
 
     try:
@@ -77,9 +82,12 @@ def main() -> int:
     box = (0, args.crop_top, width, height - args.crop_bottom)
     joined = split(off.crop(box), on.crop(box), args.divider)
     if args.labels:
-        label(joined, "vividctl off", "left")
-        label(joined, "vividctl on", "right")
-    joined.save(args.output)
+        label(joined, args.label_off, "left")
+        label(joined, args.label_on, "right")
+    if args.output.lower().endswith((".jpg", ".jpeg")):
+        joined.save(args.output, quality=args.quality, subsampling=0, optimize=True, progressive=True)
+    else:
+        joined.save(args.output)
     print(f"wrote {args.output} ({joined.size[0]}x{joined.size[1]})")
     return 0
 
