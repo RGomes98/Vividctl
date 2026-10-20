@@ -36,7 +36,7 @@ NVIDIA's Digital Vibrance slider is the quickest way to make a dull monitor look
 <table>
   <tr>
     <td align="center" width="50%"><img src="docs/assets/before-after-mystic-mountain.jpg" alt="Mystic Mountain nebula, off on the left and on at 400 on the right"><br><sub><b>Mystic Mountain</b> (Hubble)</sub></td>
-    <td align="center" width="50%"><img src="docs/assets/before-after-tarantula-nebula.jpg" alt="Tarantula Nebula, off on the left and on at 400 on the right"><br><sub><b>Tarantula Nebula</b> (Webb)</sub></td>
+    <td align="center" width="50%"><img src="docs/assets/before-after-pillars-of-creation.jpg" alt="The Pillars of Creation, off on the left and on at 400 on the right: the same pillar goes from muted olive to vivid gold and blue"><br><sub><b>Pillars of Creation</b> (Webb)</sub></td>
   </tr>
 </table>
 
@@ -86,10 +86,10 @@ Coming next: `vividctl apply` (apply a saved profile at login), `preset`, `docto
 
 Each monitor is handled once, by the first backend that sees it.
 
-| Monitor | Backend | How |
-|---|---|---|
-| Driven by an NVIDIA GPU: a desktop monitor, or an external one on the NVIDIA port of a laptop | `nvkms` | NVIDIA's Digital Vibrance, through `/dev/nvidia-modeset` |
-| Anything else GNOME shows: the internal panel of a hybrid laptop | `gnome` | A saturation shader in GNOME Shell, controlled over D-Bus |
+| Monitor                                                                                       | Backend | How                                                       |
+| --------------------------------------------------------------------------------------------- | ------- | --------------------------------------------------------- |
+| Driven by an NVIDIA GPU: a desktop monitor, or an external one on the NVIDIA port of a laptop | `nvkms` | NVIDIA's Digital Vibrance, through `/dev/nvidia-modeset`  |
+| Anything else GNOME shows: the internal panel of a hybrid laptop                              | `gnome` | A saturation shader in GNOME Shell, controlled over D-Bus |
 
 ## Supported platforms
 
@@ -103,21 +103,21 @@ X11 is out of scope. The GNOME extension also runs in headless tests on Shell 48
 
 ### What has been tested on real hardware
 
-| Machine | What was exercised |
-|---|---|
-| Desktop: GTX 1660 Ti, driver 595.99.02, Ubuntu 24.04, GNOME 46, monitor on HDMI | NVKMS `list`, `get`, `set`, `reset` with a visual check; the Shell effect on a fullscreen game and on fullscreen video |
+| Machine                                                                                                                  | What was exercised                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Desktop: GTX 1660 Ti, driver 595.99.02, Ubuntu 24.04, GNOME 46, monitor on HDMI                                          | NVKMS `list`, `get`, `set`, `reset` with a visual check; the Shell effect on a fullscreen game and on fullscreen video                                                                                                      |
 | Hybrid laptop: Dell Inspiron 16 Plus 7640 (internal panel on the Intel GPU), driver 580.178.04, Ubuntu 26.04, GNOME 50.1 | The GNOME backend on the internal panel: `list`, `set` and `get`, with a visual check. The NVKMS layout for this driver is recognised, but `set` and `get` through it have not run: that needs a monitor on the NVIDIA port |
 
 Everything else is covered by automated tests, including an emulated NVKMS driver and headless GNOME Shell 46 and 50 in CI. Reports from other hardware are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md#hardware-reports).
 
 ## Documentation
 
-| For | Read |
-|---|---|
-| Users | [docs/user-guide.md](docs/user-guide.md), [extensions/gnome/README.md](extensions/gnome/README.md) |
-| Contributors | [CONTRIBUTING.md](CONTRIBUTING.md), [docs/architecture.md](docs/architecture.md) |
+| For                      | Read                                                                                                                 |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| Users                    | [docs/user-guide.md](docs/user-guide.md), [extensions/gnome/README.md](extensions/gnome/README.md)                   |
+| Contributors             | [CONTRIBUTING.md](CONTRIBUTING.md), [docs/architecture.md](docs/architecture.md)                                     |
 | Why it is built this way | [docs/adr/](docs/adr/README.md) (decisions) and [docs/spikes/](docs/spikes/README.md) (the measurements behind them) |
-| What is next | [ROADMAP.md](ROADMAP.md), [CHANGELOG.md](CHANGELOG.md) |
+| What is next             | [ROADMAP.md](ROADMAP.md), [CHANGELOG.md](CHANGELOG.md)                                                               |
 
 ## License
 
