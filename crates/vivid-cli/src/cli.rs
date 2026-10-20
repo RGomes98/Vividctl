@@ -4,10 +4,11 @@ use clap::{Parser, Subcommand};
 
 /// Digital Vibrance control.
 ///
-/// This version controls the outputs that an NVIDIA GPU drives. Name a monitor with `--output`
-/// by its identity (the `VENDOR:PRODUCT:SERIAL` that `list` shows, which follows the monitor
-/// from port to port) or by its connector name. Without `--output`, every connected output is
-/// used.
+/// Controls the outputs an NVIDIA GPU drives, and, on GNOME with the Shell extension installed
+/// (`vividctl extension install`), every other output, such as the internal panel of a hybrid
+/// laptop. `list` shows which backend handles each output. Name a monitor with `--output` by its
+/// identity (the `VENDOR:PRODUCT:SERIAL` that `list` shows, which follows the monitor from port
+/// to port) or by its connector name. Without `--output`, every connected output is used.
 #[derive(Parser, Debug)]
 #[command(name = "vividctl", version)]
 pub struct Cli {
