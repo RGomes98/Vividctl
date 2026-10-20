@@ -73,5 +73,5 @@ VIVIDCTL=target/release/vividctl extensions/gnome/test/screenshots.sh WALLPAPER.
 scripts/split-screenshot.py OUT_DIR/off.png OUT_DIR/on.png OUT_DIR/split.png --crop-top 36 --labels
 ```
 
-`VALUE` (default 600) and `SIZE` (default 1920x1200) are environment variables. The rendering is in software, on a virtual monitor. Only the GNOME backend can be captured this way: an NVKMS change happens in the display hardware, after the compositor, so a screenshot never shows it.
+`VALUE` (default 400) and `SIZE` (default 1920x1200) are environment variables. A wallpaper of natural, not already saturated colours shows the change best (the `Monument_valley` one that ships with Ubuntu works well; a neon picture clips). The rendering is in software, on a virtual monitor. Only the GNOME backend can be captured this way: an NVKMS change happens in the display hardware, after the compositor, so a screenshot never shows it.
 

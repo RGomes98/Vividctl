@@ -11,7 +11,7 @@ mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
 
 inside() {
     set -uo pipefail
-    local value="${VALUE:-600}" size="${SIZE:-1920x1200}"
+    local value="${VALUE:-400}" size="${SIZE:-1920x1200}"
     shot() { gdbus call --session --dest org.gnome.Shell.Screenshot --object-path /org/gnome/Shell/Screenshot \
                  --method org.gnome.Shell.Screenshot.Screenshot false false "/out/$1.png" >/dev/null 2>&1; }
     # A headless shell repaints late: a throwaway capture forces a frame, then give it time.
