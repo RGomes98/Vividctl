@@ -27,7 +27,7 @@ cargo +1.88 check --workspace              # the MSRV in Cargo.toml
 scripts/check-budgets.sh                   # binary size and crate count
 ```
 
-Two more layers need extra setup:
+Three more layers need extra setup:
 
 - **The GNOME extension in a headless Shell**, in Docker. Build `vividctl` first so the harness can also run the real command line against the extension:
   ```
@@ -40,6 +40,8 @@ Two more layers need extra setup:
   VIVID_HW_TESTS=1 cargo test --workspace -- --ignored
   ```
   They may change and restore the vibrance of a monitor. Without a monitor on an NVIDIA port they say so and pass.
+
+- **The README quick start on a clean machine**, in Docker: `scripts/check-quick-start.sh 24.04` (or `26.04`) runs the install part of the quick start, as written in the README, as a new user on a clean Ubuntu, then checks that `vividctl` is found in new bash and zsh shells. It builds the committed code, so commit first. CI runs it when the README, the user guide or the CLI changes, and weekly.
 
 When the NVKMS layout table changes, regenerate it from NVIDIA's headers as described in [tests/abi/README.md](tests/abi/README.md); never edit `generations.rs` by hand.
 
