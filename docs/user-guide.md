@@ -17,16 +17,16 @@ Ubuntu 24.04 starts an **Xorg** session by default when an NVIDIA driver is inst
 There are no releases yet. Build from source:
 
 ```
-sudo apt install build-essential pkg-config libdbus-1-dev
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh     # if you have no Rust toolchain
+sudo apt update && sudo apt install git curl build-essential pkg-config libdbus-1-dev
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y   # Rust; skip if you have it
+. "$HOME/.cargo/env"
 git clone https://github.com/RGomes98/Vividctl.git && cd Vividctl
-cargo build --release -p vivid-cli
-install -m 755 target/release/vividctl ~/.local/bin/vividctl
+cargo install --path crates/vivid-cli --locked
 ```
 
-`~/.local/bin` is on your `PATH` after the next login if it did not exist before. A binary built on Ubuntu 24.04 runs on 24.04 and newer; it needs `libdbus-1-3`, which every GNOME desktop has.
+`cargo install` builds `vividctl` and puts it in `~/.cargo/bin`. The Rust installer adds that directory to your `PATH` for bash, zsh and fish, so every new terminal finds `vividctl`; `. "$HOME/.cargo/env"` does the same for the terminal you are in. The binary needs `libdbus-1-3` to run, which every GNOME desktop has. These steps are checked on clean Ubuntu 24.04 and 26.04 by `scripts/check-quick-start.sh`.
 
-Without `libdbus-1-dev`, build only the NVIDIA backend: `cargo build --release -p vivid-cli --no-default-features`. The `vividctl extension` commands and the internal-panel support are not in that build.
+Without `libdbus-1-dev`, build only the NVIDIA backend: `cargo install --path crates/vivid-cli --locked --no-default-features`. The `vividctl extension` commands and the internal-panel support are not in that build.
 
 ## First run
 
@@ -103,7 +103,7 @@ cat > ~/.local/bin/vividctl-apply.sh <<'EOF'
 #!/bin/sh
 # Retries because the session may still be starting (on GNOME, the extension may still be loading).
 for _ in $(seq 1 60); do
-    "$HOME/.local/bin/vividctl" set 425 --output HDMI-0 && exit 0
+    "$HOME/.cargo/bin/vividctl" set 425 --output HDMI-0 && exit 0
     sleep 1
 done
 exit 1
@@ -133,6 +133,7 @@ Whether the value survives suspend and resume has not been tested (SP-03). If it
 | `nvkms: unavailable: ... the NVIDIA kernel module is not loaded` | Run `lsmod \| grep nvidia` and `cat /sys/module/nvidia/version`. After a kernel update the module for the new kernel may be missing: install the package for the running kernel (its name looks like `linux-modules-nvidia-595-open-$(uname -r)`) and reboot. |
 | `nvkms: unavailable: ... do not agree on the driver version` | The driver was updated and the old module is still loaded. Reboot. |
 | `nvkms: unavailable: no permission to open /dev/nvidia-modeset` | Your user cannot open the device. Check its permissions. |
+| `vividctl: command not found` | Open a new terminal, or run `. "$HOME/.cargo/env"`. If `ls ~/.cargo/bin/vividctl` finds nothing, `cargo install` did not finish: run it again and read its last lines. |
 | `gnome: unavailable: ... extension is not running` | Run `vividctl extension install` (or `status` to see which step is missing), then log out and back in. Outside a GNOME session this is expected: only NVIDIA outputs can be controlled. |
 | `no connected output can be controlled` | No monitor is on an NVIDIA port and the GNOME backend is unavailable. The internal panel of a hybrid laptop needs the extension. |
 | `status` says `user extensions: turned off` | Run `gsettings set org.gnome.shell disable-user-extensions false`. |
@@ -146,5 +147,8 @@ When you report a problem, include the output of `vividctl list`, `vividctl exte
 ```
 vividctl reset
 vividctl extension remove
-rm -f ~/.local/bin/vividctl ~/.local/bin/vividctl-apply.sh ~/.config/autostart/vividctl-apply.desktop
+cargo uninstall vivid-cli
+rm -f ~/.local/bin/vividctl-apply.sh ~/.config/autostart/vividctl-apply.desktop
 ```
+
+An earlier build that was copied by hand into `~/.local/bin/vividctl` is not touched by `cargo uninstall`; delete it with `rm -f ~/.local/bin/vividctl`.

@@ -1,0 +1,33 @@
+name: Quick start
+
+# Runs the README quick start, as written, on clean Ubuntu releases. It is slow (a fresh Rust
+# install and a release build), so it runs only when the instructions or the CLI change, and weekly.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - README.md
+      - docs/user-guide.md
+      - Cargo.toml
+      - Cargo.lock
+      - crates/vivid-cli/**
+      - scripts/check-quick-start.sh
+      - .github/workflows/quick-start.yml
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: quick-start-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quick-start:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ubuntu: ["24.04", "26.04"]
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/check-quick-start.sh ${{ matrix.ubuntu }}
