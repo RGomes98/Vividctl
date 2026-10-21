@@ -90,7 +90,7 @@ While a monitor is not neutral on the `gnome` backend:
 - Fullscreen windows go through the compositor so the effect reaches games and video. Measured on a GTX 1660 Ti with a fullscreen game, that cost about 1 percentage point of GPU. Latency and VRR were not measured.
 - Screenshots and screen recordings taken through GNOME include the effect.
 
-When every monitor is back to neutral, the effect is removed and the cost with it. The extension holds the values in memory only: a logout, a shell restart or `extension remove` returns every monitor to neutral.
+When every monitor is back to neutral, the effect is removed and the cost with it. The extension holds the values in memory only: a logout, a shell restart or `extension remove` returns every monitor to neutral. Locking the screen keeps them, and the lock screen shows the effect too.
 
 ## Apply it at every login
 

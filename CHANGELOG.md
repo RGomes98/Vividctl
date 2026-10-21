@@ -19,3 +19,7 @@ Nothing is released yet; 0.1.0 is described in the [roadmap](ROADMAP.md#release-
 - **Budgets:** CI fails if the `vividctl` binary passes 1.5 MiB or its dependency tree passes 40 crates (it is 1.09 MiB and 25 crates).
 - **Docs:** user guide, architecture, seven decision records (`docs/adr/`) and the measurements behind them (`docs/spikes/`).
 - **Repo:** Cargo workspace, CI (format, clippy, tests, `cargo-deny`, `cargo-machete`, MSRV, budgets, extension tests), lint and dependency policy, contribution docs, issue and pull request templates.
+
+### Fixed
+
+- **GNOME:** locking the screen no longer returns the outputs the extension controls to neutral (#58). The extension now stays enabled on the lock screen, which shows the effect too.

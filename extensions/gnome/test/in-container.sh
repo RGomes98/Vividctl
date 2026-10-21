@@ -173,6 +173,20 @@ PY
         echo "SKIP  no /vividctl binary: the end-to-end check needs VIVIDCTL=path/to/vividctl"
     fi
 
+    # --- locking the screen keeps the values. The shell disables, on a session mode change, every
+    # extension that does not support the new mode; the lock screen is the unlock-dialog mode.
+    shell_eval() { gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell \
+                       --method org.gnome.Shell.Eval "$1" 2>&1; }
+    owned() { gdbus introspect --session --dest org.vividctl.Shell --object-path /org/vividctl/Shell >/dev/null 2>&1; }
+    call SetSaturation "$right" 1.8 >/dev/null
+    shell_eval "Main.sessionMode.pushMode('unlock-dialog')" >/dev/null; sleep 2
+    shell_eval "Main.sessionMode.currentMode" | grep -q "unlock-dialog" && ok "the shell is in the lock screen mode" || fail "could not enter unlock-dialog: $(shell_eval 'Main.sessionMode.currentMode')"
+    owned && ok "the extension keeps running while the screen is locked" || fail "the extension was disabled by the lock screen"
+    [ "$(getsat "$right")" = "1.8" ] && ok "the value survives the lock" || fail "the value after the lock is '$(getsat "$right")'"
+    shell_eval "Main.sessionMode.popMode('unlock-dialog')" >/dev/null; sleep 2
+    [ "$(getsat "$right")" = "1.8" ] && ok "the value is still there after unlocking" || fail "the value after unlocking is '$(getsat "$right")'"
+    call SetSaturation "$right" 1.0 >/dev/null
+
     # --- disabling the extension releases the bus name and the effect
     if command -v gnome-extensions >/dev/null; then
         call SetSaturation "$right" 1.5 >/dev/null
