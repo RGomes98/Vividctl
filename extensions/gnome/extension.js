@@ -114,6 +114,14 @@ class VividctlSaturationEffect extends Clutter.ShaderEffect {
         }
         this.queue_repaint();
     }
+
+    // Mutter paints one stage view per monitor, each under its own redraw clip, and an offscreen
+    // effect keeps one buffer from paint to paint. Reusing it let a paint show a buffer rendered for
+    // another view or another clip: trails when windows moved, on every monitor the effect covers
+    // (#59). Render it on every paint instead.
+    vfunc_paint(node, paintContext, flags) {
+        super.vfunc_paint(node, paintContext, flags | Clutter.EffectPaintFlags.ACTOR_DIRTY);
+    }
 });
 
 export default class VividctlExtension extends Extension {
