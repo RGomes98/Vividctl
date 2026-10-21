@@ -62,7 +62,7 @@ cargo build --release -p vivid-cli
 VIVIDCTL=target/release/vividctl extensions/gnome/test/run.sh [24.04|25.04|25.10|26.04]
 ```
 
-Needs Docker. Builds an Ubuntu image with GNOME Shell, starts a headless shell with two virtual monitors and checks the interface, the error cases, the pixels on each monitor (only the boosted one changes), unredirect handling, and disable/enable. With `VIVIDCTL` it also installs the extension with the real `vividctl` before the shell starts and runs `list`, `set`, `get`, `reset` and `extension status|install|remove` against it; without it that part is skipped. CI runs it on Ubuntu 24.04 and 26.04. A headless Shell older than 48 repaints late; if a pixel check cannot be told apart from that, it is reported as `XFAIL` instead of a failure.
+Needs Docker. Builds an Ubuntu image with GNOME Shell, starts a headless shell with two virtual monitors and checks the interface, the error cases, the pixels on each monitor (only the boosted one changes), unredirect handling, the lock screen, that a square moved across both monitors leaves no trail, that an actor partly off the screen does not shift the effect, and disable/enable. With `VIVIDCTL` it also installs the extension with the real `vividctl` before the shell starts and runs `list`, `set`, `get`, `reset` and `extension status|install|remove` against it; without it that part is skipped. CI runs it on Ubuntu 24.04 and 26.04. A headless Shell older than 48 repaints late; if a pixel check cannot be told apart from that, it is reported as `XFAIL` instead of a failure.
 
 ## Screenshots for documentation
 

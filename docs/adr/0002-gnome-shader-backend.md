@@ -50,6 +50,8 @@ Shell 47 (no Ubuntu release ships it), the behaviour of 48 to 50 on real GPUs an
 - The production extension is in `extensions/gnome/`, tested in CI in a headless Shell 46 and 50 (#25). The Shell 46 region quirk did not appear there.
 - `vividctl` drives it from the `gnome` backend (#23, #24), and installs it with `vividctl extension install`. Until the `.deb` exists (decision 6), that command installs the copy embedded in the binary into the user's directory, and `vividctl list` already says when the extension is missing; a `doctor` will say it too.
 - An actual hybrid laptop (Dell Inspiron 16 Plus 7640, panel on the Intel GPU, driver 580.178.04, Ubuntu 26.04, Shell 50.1) was driven from `vividctl`, with a visual check of the panel. Latency, VRR, fractional scaling and two real monitors are still unmeasured.
+- With two monitors, moving windows left trails on both (#59). The offscreen effect kept one buffer between paints, and Mutter paints one stage view per monitor under its own redraw clip, so a paint could show a buffer rendered for another view or clip. The effect now renders its buffer on every paint. Skipping the monitors with nothing boosted would be cheaper, but gjs cannot tell which stage view is being painted.
+- Locking the screen disabled the extension and dropped its values (#58); it now declares the `unlock-dialog` session mode.
 
 ## Alternatives considered
 
