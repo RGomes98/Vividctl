@@ -53,18 +53,21 @@ Neither path touches the game process: nothing is injected into it and no overla
 
 ## Quick start
 
+<!-- quick-start -->
 ```
-sudo apt install build-essential pkg-config libdbus-1-dev
+sudo apt update && sudo apt install git curl build-essential pkg-config libdbus-1-dev
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y   # Rust; skip if you have it
+. "$HOME/.cargo/env"
 git clone https://github.com/RGomes98/Vividctl.git && cd Vividctl
-cargo build --release -p vivid-cli
-install -m 755 target/release/vividctl ~/.local/bin/vividctl
+cargo install --path crates/vivid-cli --locked
 
 vividctl list                          # what it found, and which backend controls each output
 vividctl set 425 --output HDMI-0       # -1024 (washed out) to 1023 (saturated), 0 is neutral
 vividctl reset
 ```
+<!-- /quick-start -->
 
-For the internal panel of a laptop, or any output the NVIDIA GPU does not drive, also run `vividctl extension install` and log in again once. 425 is the value of the pictures above; 200 to 300 is a gentler first try.
+`cargo install` puts `vividctl` in `~/.cargo/bin`, which the Rust installer adds to your `PATH` (`. "$HOME/.cargo/env"` does it for the terminal you are in). For the internal panel of a laptop, or any output the NVIDIA GPU does not drive, also run `vividctl extension install` and log in again once. 425 is the value of the pictures above; 200 to 300 is a gentler first try.
 
 The [user guide](docs/user-guide.md) has the rest: requirements, applying a value at every login, troubleshooting, uninstalling.
 
