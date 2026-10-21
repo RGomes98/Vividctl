@@ -38,7 +38,7 @@ Session bus, name `org.vividctl.Shell`, object `/org/vividctl/Shell`, interface 
 
 Monitors are addressed by the connector name Mutter uses (`Meta-0`, `eDP-1`, `HDMI-1`), the same name as in `org.gnome.Mutter.DisplayConfig`. Identity across ports is resolved on the Rust side from the EDID (ADR-0003), because the Shell 46 API cannot list monitors.
 
-Errors are D-Bus `InvalidArgs`: an unknown connector, or a saturation outside `0.0..=4.0`. A refused call changes nothing. Values live in the shell process only: a shell restart, a disable, or a logout returns every monitor to neutral, and the caller re-applies them.
+Errors are D-Bus `InvalidArgs`: an unknown connector, or a saturation outside `0.0..=4.0`. A refused call changes nothing. Values live in the shell process only: a shell restart, a disable, or a logout returns every monitor to neutral, and the caller re-applies them. Locking the screen keeps them: `metadata.json` declares the `unlock-dialog` session mode, because GNOME Shell disables, when the screen locks, every extension that does not. The lock screen therefore shows the effect too.
 
 ```
 gdbus call --session --dest org.vividctl.Shell --object-path /org/vividctl/Shell \
