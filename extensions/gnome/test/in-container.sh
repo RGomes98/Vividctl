@@ -91,6 +91,13 @@ inside() {
     [ "$(getsat "$right")" = "1.8" ] && ok "GetSaturation returns what was set" || fail "GetSaturation returned '$(getsat "$right")'"
     [ "$(getsat "$left")" = "1" ] && ok "another monitor stays neutral" || fail "the other monitor changed to '$(getsat "$left")'"
     prop UnredirectDisabled | grep -q "<true>" && ok "unredirect is disabled while a monitor is boosted" || fail "unredirect not disabled"
+    # The boosted monitor is covered by an overlay that clones the shell UI: a click there must still
+    # reach the shell underneath, not the overlay.
+    pick="$(gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval \
+        "const C = imports.gi.Clutter; const a = global.stage.get_actor_at_pos(C.PickMode.REACTIVE, 1120, 240); String(a instanceof C.Clone) + ' ' + a.constructor.name" 2>&1)"
+    if ! grep -q "^(true," <<<"$pick"; then fail "could not ask what a click on the boosted monitor reaches: $pick"
+    elif grep -q "'true " <<<"$pick"; then fail "a click on the boosted monitor reaches the overlay: $pick"
+    else ok "a click on the boosted monitor reaches the shell, not the overlay"; fi
 
     # --- errors
     says "unknown monitor" SetSaturation "no-such-monitor" 1.5 && ok "an unknown monitor is refused" || fail "an unknown monitor was accepted"
@@ -187,7 +194,7 @@ PY
     [ "$(getsat "$right")" = "1.8" ] && ok "the value is still there after unlocking" || fail "the value after unlocking is '$(getsat "$right")'"
     call SetSaturation "$right" 1.0 >/dev/null
 
-    # --- moving something leaves no trail, on either monitor (#59). The effect covers both stage views;
+    # --- moving something leaves no trail, on either monitor (#59). There are two stage views;
     # a square crosses from the left monitor to the boosted right one, and after each step the
     # place it left has to look exactly like a capture taken without it.
     call SetSaturation "$right" 1.5 >/dev/null
