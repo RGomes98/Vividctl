@@ -20,7 +20,7 @@ Without `vividctl` (for example when working on the extension itself), copy `ext
 
 ## How it works
 
-- A `Clutter.ShaderEffect` on `Main.uiGroup` adjusts saturation inside one rectangle per monitor with a non-neutral value. With every monitor neutral the effect is removed and costs nothing.
+- Each monitor with a non-neutral value gets an overlay: a `Clutter.Clone` of `Main.uiGroup` on top of the shell, clipped to that monitor, with a `Clutter.ShaderEffect` that adjusts saturation. A neutral monitor gets nothing, so no effect ever spans two monitors (#59), and with every monitor neutral nothing is left and nothing costs. The overlay is not reactive: input reaches the shell underneath. The GNOME magnifier applies its colour effects to a clone of `uiGroup` the same way.
 - Fullscreen windows are normally scanned out without passing through the compositor, so the effect would not reach games or fullscreen video. While any monitor is non-neutral the extension disables unredirect (a real performance cost, which is why a neutral monitor removes it again).
 - Screenshots and screen recordings taken through the shell include the effect.
 
@@ -62,7 +62,7 @@ cargo build --release -p vivid-cli
 VIVIDCTL=target/release/vividctl extensions/gnome/test/run.sh [24.04|25.04|25.10|26.04]
 ```
 
-Needs Docker. Builds an Ubuntu image with GNOME Shell, starts a headless shell with two virtual monitors and checks the interface, the error cases, the pixels on each monitor (only the boosted one changes), unredirect handling, and disable/enable. With `VIVIDCTL` it also installs the extension with the real `vividctl` before the shell starts and runs `list`, `set`, `get`, `reset` and `extension status|install|remove` against it; without it that part is skipped. CI runs it on Ubuntu 24.04 and 26.04. A headless Shell older than 48 repaints late; if a pixel check cannot be told apart from that, it is reported as `XFAIL` instead of a failure.
+Needs Docker. Builds an Ubuntu image with GNOME Shell, starts a headless shell with two virtual monitors and checks the interface, the error cases, the pixels on each monitor (only the boosted one changes), unredirect handling, the lock screen, that a square moved across both monitors leaves no trail, that an actor partly off the screen does not shift the effect, and disable/enable. With `VIVIDCTL` it also installs the extension with the real `vividctl` before the shell starts and runs `list`, `set`, `get`, `reset` and `extension status|install|remove` against it; without it that part is skipped. CI runs it on Ubuntu 24.04 and 26.04. A headless Shell older than 48 repaints late; if a pixel check cannot be told apart from that, it is reported as `XFAIL` instead of a failure.
 
 ## Screenshots for documentation
 

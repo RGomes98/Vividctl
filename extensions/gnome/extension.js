@@ -1,5 +1,6 @@
-// Vividctl: a saturation shader over the whole GNOME Shell stage, one value per monitor, controlled
-// over D-Bus. See README.md for the interface and docs/adr/0002-gnome-shader-backend.md for why.
+// Vividctl: a saturation shader over each boosted monitor of GNOME Shell, one value per monitor,
+// controlled over D-Bus. See README.md for the interface and docs/adr/0002-gnome-shader-backend.md
+// for why.
 //
 // Saturation 1.0 is neutral, above 1 boosts, below 1 washes out, 0 is greyscale. Monitors are
 // named by their Mutter connector (`eDP-1`, `HDMI-1`); the client learns them from Mutter.
@@ -23,8 +24,6 @@ const EFFECT_NAME = 'vividctl-saturation';
 // Saturation values the interface accepts. The command line maps vibrance (-1024..1023) into 0..2.
 const MIN_SATURATION = 0.0;
 const MAX_SATURATION = 4.0;
-// The shader has one set of uniforms per monitor, so it is generated for a fixed count.
-const MAX_MONITORS = 8;
 
 const DBUS_XML = `
 <node>
@@ -67,52 +66,32 @@ function setUnredirect(disable) {
 // float uniform. Nudge integers so they stay doubles.
 const asFloat = v => (Number.isInteger(v) ? v + 1e-6 : v);
 
-// ShaderEffect cannot take vec or array uniforms from JS, so the source is generated, with one set
-// of scalar uniforms (x, y, w, h, saturation) per monitor.
-function buildShader(count) {
-    let declarations = '';
-    let body = 'float sat = 1.0;\n';
-    for (let i = 0; i < count; i++) {
-        declarations += `uniform float x${i}; uniform float y${i}; uniform float w${i}; uniform float h${i}; uniform float s${i};\n`;
-        body += `${i === 0 ? '' : 'else '}if (p.x >= x${i} && p.x < x${i} + w${i} && p.y >= y${i} && p.y < y${i} + h${i}) sat = s${i};\n`;
-    }
-    return `
+const SHADER = `
 uniform sampler2D tex;
-uniform float stage_w;
-uniform float stage_h;
-${declarations}
+uniform float saturation;
 void main() {
     vec4 c = texture2D(tex, cogl_tex_coord_in[0].xy);
-    vec2 p = cogl_tex_coord_in[0].xy * vec2(stage_w, stage_h);
-    ${body}
     float luma = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722));
-    cogl_color_out = vec4(mix(vec3(luma), c.rgb, sat), c.a);
+    cogl_color_out = vec4(mix(vec3(luma), c.rgb, saturation), c.a);
 }`;
-}
 
 const SaturationEffect = GObject.registerClass(
 class VividctlSaturationEffect extends Clutter.ShaderEffect {
-    _init(count) {
+    _init() {
         super._init({shader_type: FRAGMENT_SHADER});
-        this._count = count;
-        this.set_shader_source(buildShader(count));
+        this.set_shader_source(SHADER);
+        this.set_uniform_value('tex', 0);
     }
 
-    // `regions` is a list of {x, y, width, height, saturation} in stage pixels.
-    update(regions, stageWidth, stageHeight) {
-        this.set_uniform_value('tex', 0);
-        this.set_uniform_value('stage_w', asFloat(stageWidth));
-        this.set_uniform_value('stage_h', asFloat(stageHeight));
-        for (let i = 0; i < this._count; i++) {
-            const r = regions[i];
-            // Widen each rectangle by a hair so pixels on a border are never missed.
-            this.set_uniform_value(`x${i}`, asFloat(r.x - 0.01));
-            this.set_uniform_value(`y${i}`, asFloat(r.y - 0.01));
-            this.set_uniform_value(`w${i}`, asFloat(r.width + 0.02));
-            this.set_uniform_value(`h${i}`, asFloat(r.height + 0.02));
-            this.set_uniform_value(`s${i}`, asFloat(r.saturation));
-        }
+    setSaturation(saturation) {
+        this.set_uniform_value('saturation', asFloat(saturation));
         this.queue_repaint();
+    }
+
+    // An offscreen effect keeps its buffer from paint to paint. Render it on every paint, so a paint
+    // never shows a buffer rendered under another redraw clip (#59).
+    vfunc_paint(node, paintContext, flags) {
+        super.vfunc_paint(node, paintContext, flags | Clutter.EffectPaintFlags.ACTOR_DIRTY);
     }
 });
 
@@ -120,8 +99,8 @@ export default class VividctlExtension extends Extension {
     enable() {
         // Saturation by connector. A monitor that is unplugged keeps its value for when it returns.
         this._saturations = new Map();
-        this._effect = null;
-        this._effectCount = -1;
+        // One overlay per boosted monitor, by connector (see _apply).
+        this._overlays = new Map();
         this._unredirectDisabled = false;
 
         this._monitorsChangedId = Main.layoutManager.connect('monitors-changed', () => this._apply());
@@ -137,7 +116,7 @@ export default class VividctlExtension extends Extension {
         this._dbus.unexport();
         this._dbus = null;
         Main.layoutManager.disconnect(this._monitorsChangedId);
-        this._removeEffect();
+        this._removeOverlays();
         this._setUnredirect(false);
         this._saturations = null;
     }
@@ -152,41 +131,51 @@ export default class VividctlExtension extends Extension {
     }
 
     // Applies the stored saturations to the monitors that exist now.
+    //
+    // Each boosted monitor gets an overlay: a clone of the whole shell UI on top of it, clipped to
+    // that monitor, with the effect on the clone. One effect on Main.uiGroup covered every monitor at
+    // once, and with more than one monitor (one stage view each, on two GPUs on a hybrid laptop) it
+    // left trails and dark flicker (#59). An overlay stays inside one view and a neutral monitor gets
+    // nothing. The GNOME magnifier applies its colour effects to a clone of uiGroup the same way.
+    // The clone is not reactive, so input still reaches the shell underneath.
     _apply() {
-        const regions = [];
+        const regions = new Map();
         for (const [connector, saturation] of this._saturations) {
             if (saturation === 1.0)
                 continue;
             const region = this._regionOf(connector, saturation);
-            if (region && regions.length < MAX_MONITORS)
-                regions.push(region);
+            if (region)
+                regions.set(connector, region);
         }
 
-        if (regions.length === 0) {
-            this._removeEffect();
-            this._setUnredirect(false);
-            return;
+        for (const [connector, overlay] of this._overlays) {
+            if (!regions.has(connector)) {
+                overlay.destroy();
+                this._overlays.delete(connector);
+            }
+        }
+        for (const [connector, r] of regions) {
+            let overlay = this._overlays.get(connector);
+            if (!overlay) {
+                overlay = new Clutter.Clone({source: Main.uiGroup, reactive: false});
+                overlay.add_effect_with_name(EFFECT_NAME, new SaturationEffect());
+                global.stage.add_child(overlay);
+                this._overlays.set(connector, overlay);
+            }
+            overlay.set_position(0, 0);
+            overlay.set_clip(r.x, r.y, r.width, r.height);
+            overlay.get_effect(EFFECT_NAME).setSaturation(r.saturation);
         }
 
-        // The effect is built for exactly the number of regions, and rebuilt when that changes.
-        if (!this._effect || this._effectCount !== regions.length) {
-            this._removeEffect();
-            this._effect = new SaturationEffect(regions.length);
-            this._effectCount = regions.length;
-            Main.uiGroup.add_effect_with_name(EFFECT_NAME, this._effect);
-        }
-        this._effect.update(regions, Main.uiGroup.width, Main.uiGroup.height);
         // Fullscreen windows are normally unredirected (scanned out directly), which would bypass
-        // the shader. Keep them composited while any monitor is not neutral.
-        this._setUnredirect(true);
+        // the overlay. Keep them composited while any monitor is not neutral.
+        this._setUnredirect(regions.size > 0);
     }
 
-    _removeEffect() {
-        if (this._effect) {
-            Main.uiGroup.remove_effect_by_name(EFFECT_NAME);
-            this._effect = null;
-            this._effectCount = -1;
-        }
+    _removeOverlays() {
+        for (const overlay of this._overlays.values())
+            overlay.destroy();
+        this._overlays.clear();
     }
 
     _setUnredirect(disable) {
