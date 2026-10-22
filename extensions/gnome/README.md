@@ -20,7 +20,7 @@ Without `vividctl` (for example when working on the extension itself), copy `ext
 
 ## How it works
 
-- A `Clutter.ShaderEffect` on `Main.uiGroup` adjusts saturation inside one rectangle per monitor with a non-neutral value. With every monitor neutral the effect is removed and costs nothing.
+- Each monitor with a non-neutral value gets an overlay: a `Clutter.Clone` of `Main.uiGroup` on top of the shell, clipped to that monitor, with a `Clutter.ShaderEffect` that adjusts saturation. A neutral monitor gets nothing, so no effect ever spans two monitors (#59), and with every monitor neutral nothing is left and nothing costs. The overlay is not reactive: input reaches the shell underneath. The GNOME magnifier applies its colour effects to a clone of `uiGroup` the same way.
 - Fullscreen windows are normally scanned out without passing through the compositor, so the effect would not reach games or fullscreen video. While any monitor is non-neutral the extension disables unredirect (a real performance cost, which is why a neutral monitor removes it again).
 - Screenshots and screen recordings taken through the shell include the effect.
 
