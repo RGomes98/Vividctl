@@ -91,6 +91,13 @@ inside() {
     [ "$(getsat "$right")" = "1.8" ] && ok "GetSaturation returns what was set" || fail "GetSaturation returned '$(getsat "$right")'"
     [ "$(getsat "$left")" = "1" ] && ok "another monitor stays neutral" || fail "the other monitor changed to '$(getsat "$left")'"
     prop UnredirectDisabled | grep -q "<true>" && ok "unredirect is disabled while a monitor is boosted" || fail "unredirect not disabled"
+    # The boosted monitor is covered by an overlay that clones the shell UI: a click there must still
+    # reach the shell underneath, not the overlay.
+    pick="$(gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval \
+        "const C = imports.gi.Clutter; const a = global.stage.get_actor_at_pos(C.PickMode.REACTIVE, 1120, 240); String(a instanceof C.Clone) + ' ' + a.constructor.name" 2>&1)"
+    if ! grep -q "^(true," <<<"$pick"; then fail "could not ask what a click on the boosted monitor reaches: $pick"
+    elif grep -q "'true " <<<"$pick"; then fail "a click on the boosted monitor reaches the overlay: $pick"
+    else ok "a click on the boosted monitor reaches the shell, not the overlay"; fi
 
     # --- errors
     says "unknown monitor" SetSaturation "no-such-monitor" 1.5 && ok "an unknown monitor is refused" || fail "an unknown monitor was accepted"
@@ -186,6 +193,68 @@ PY
     shell_eval "Main.sessionMode.popMode('unlock-dialog')" >/dev/null; sleep 2
     [ "$(getsat "$right")" = "1.8" ] && ok "the value is still there after unlocking" || fail "the value after unlocking is '$(getsat "$right")'"
     call SetSaturation "$right" 1.0 >/dev/null
+
+    # --- moving something leaves no trail, on either monitor (#59). There are two stage views;
+    # a square crosses from the left monitor to the boosted right one, and after each step the
+    # place it left has to look exactly like a capture taken without it.
+    call SetSaturation "$right" 1.5 >/dev/null
+    shell_eval "const St = imports.gi.St; global.vividSquare = new St.Widget({style: 'background-color: #d93b3b;', width: 160, height: 160}); Main.uiGroup.add_child(global.vividSquare); global.vividSquare.hide(); 'ok'" >/dev/null
+    settled trail-ref
+    shell_eval "global.vividSquare.show(); 'ok'" >/dev/null
+    step=0
+    for x in 120 340 560 780 1000 1220; do
+        shell_eval "global.vividSquare.set_position($x, 200); 'ok'" >/dev/null
+        settled "trail-$step"; step=$((step + 1))
+    done
+    # --- something partly off the screen must not move the boosted rectangle (#59): the effect's
+    # buffer follows the paint box of uiGroup, which then reaches past the stage.
+    shell_eval "global.vividSquare.hide(); 'ok'" >/dev/null
+    settled paintbox-ref
+    shell_eval "const St = imports.gi.St; global.vividOff = new St.Widget({style: 'background-color: #3bd96b;', width: 400, height: 40}); Main.uiGroup.add_child(global.vividOff); global.vividOff.set_position(-300, 540); 'ok'" >/dev/null
+    settled paintbox-off
+    shell_eval "global.vividSquare.destroy(); global.vividOff.destroy(); delete global.vividSquare; delete global.vividOff; 'ok'" >/dev/null
+    call SetSaturation "$right" 1.0 >/dev/null
+    python3 - <<'PY' || fails=$((fails + 1))
+from PIL import Image, ImageChops
+def load(name): return Image.open(f"/out/{name}.png").convert("RGB")
+def differing(a, b, box):
+    """Share of pixels inside box that differ visibly between two captures."""
+    d = ImageChops.difference(a.crop(box), b.crop(box)).convert("L")
+    px = list(d.getdata())
+    return sum(1 for v in px if v > 12) / max(1, len(px))
+bad = 0
+def saturation(im, box):
+    px = [q for q in im.crop(box).convert("HSV").getdata()]
+    return sum(q[1] for q in px) / len(px) / 255.0
+# Without this a broken effect would pass: no effect, no trail. The right monitor must be boosted.
+right_box = (820, 20, 1420, 460)
+neutral_sat = saturation(load("neutral"), right_box)
+for name in ("trail-ref", "paintbox-ref", "paintbox-off"):
+    s = saturation(load(name), right_box)
+    if s < neutral_sat * 1.3:
+        print(f"FAIL  the effect is not on the right monitor in {name} ({s:.3f}, neutral {neutral_sat:.3f})")
+        bad += 1
+ref = load("trail-ref")
+xs = [120, 340, 560, 780, 1000, 1220]
+worst = 0.0
+for i in range(1, len(xs)):
+    now = load(f"trail-{i}")
+    # The part of the previous square that the current one does not cover, inset by 4 px.
+    x0, x1 = xs[i - 1] + 4, min(xs[i - 1] + 160, xs[i]) - 4
+    if x1 > x0:
+        share = differing(now, ref, (x0, 204, x1, 356))
+        worst = max(worst, share)
+        if share > 0.01:
+            print(f"      step {i}: {share:.1%} of the place the square left still differs (x {x0}..{x1})")
+            bad += 1
+print(("PASS " if bad == 0 else "FAIL ") + f" moving a square across both monitors leaves no trail (worst {worst:.1%})")
+pref, poff = load("paintbox-ref"), load("paintbox-off")
+# Everything but the off-screen bar itself: the right monitor and the left one above the bar.
+share = max(differing(pref, poff, (820, 20, 1420, 460)), differing(pref, poff, (20, 20, 780, 520)))
+print(("PASS " if share <= 0.01 else "FAIL ") + f" an actor partly off the screen does not shift the effect ({share:.1%} differs)")
+bad += share > 0.01
+raise SystemExit(1 if bad else 0)
+PY
 
     # --- disabling the extension releases the bus name and the effect
     if command -v gnome-extensions >/dev/null; then
